@@ -12,6 +12,7 @@
     "body-parser": "^1.14.2",
     "express": "^4.13.3",
     "tweetnacl" :"*",
+    "tweetnacl-util" : "*",
     "request" : "*",
     "JSON" : "*",
     "nedb" : "*",
