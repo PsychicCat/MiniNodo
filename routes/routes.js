@@ -2,6 +2,7 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var app = express();
 var nacl = require("tweetnacl");
+var naclutil = require("tweetnacl-util");
 var request = require('request');
 var request2 = require('request');
 var Datastore = require('nedb')
@@ -62,11 +63,14 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
    } else if (req.body.Type == "address") {
         m = req.body.Type+req.body.timestamp;
         console.log("getting address");
-        var ver = nacl.sign.detached.verify(nacl.util.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
+        var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
         console.log(ver);
         if (ver == true) {
             Lasttime = times;
-            return res.send(Wallet.address());
+            Wallet.address().then(function(addy) {
+                console.log(addy.address);
+                return res.send(String(addy.address));
+            });
         } else {
             return res.send("incorrect signature");
         }
@@ -76,11 +80,21 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
     } else if (req.body.Type == "balance") {
         m = req.body.Type + req.body.timestamp;
         console.log("getting balance");
-        var ver = nacl.sign.detached.verify(nacl.util.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
+        var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
         console.log(ver);
         if (ver == true) {
             Lasttime = times;
-            return res.send(Wallet.balance());
+            console.log("balance is:");
+            Wallet.balance().then(function(balance) {
+                    console.log(balance);
+                    console.log("try to get actual");
+                    console.log(balance.balance/1000000000000);
+                    //balanceUsual = balance.balance / 1
+                    balanceUsual = (balance.balance/1000000000000);
+                    //balanceParsed = JSON.parse(JSON.stringify(balance));
+                    return res.send(String(balanceUsual));
+            });
+            //return res.send(Wallet.balance());
         } else {
             return res.send("incorrect signature");
         }
@@ -94,7 +108,7 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
             
             console.log("sending");
             m = req.body.Type + req.body.amount.replace(".", "d") +  req.body.timestamp + req.body.destination;
-            var ver = nacl.sign.detached.verify(nacl.util.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
+            var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
             console.log(ver);
             //check if last request was more than 30 seconds ago.. simple replay avoidance
             if (ver == true && (Math.abs(Lasttime - times) > 30)) {
@@ -147,6 +161,14 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
                                         xmrpid : xmr_pid };
                             console.log("txn :" + JSON.stringify(txn));
                             db.insert(txn);
+                            var destinations = {amount : xmr_amount, address : xmr_addr};
+                            var options = {pid : xmr_pid };
+                            if (xmr_pid) {
+                                Wallet.transfer(destinations, options).then(function(txids) {
+                                    console.log(txids);
+                                });
+                            }
+
                             //Wallet.transfer(destination, options);
                             
                             //console.log("it's in db now!");
@@ -161,6 +183,28 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
                 return res.send("incorrect signature");
             }
         }
+    } else if (req.body.Type == "sendXMR") {
+    
+            console.log("sending plain old XMR");
+            m = req.body.Type + req.body.amount.replace(".", "d") +  req.body.timestamp + req.body.destination;
+            var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
+            console.log(ver);
+            //check if last request was more than 30 seconds ago.. simple replay avoidance
+            if (ver == true && (Math.abs(Lasttime - times) > 30)) {
+                Lasttime = times;
+                console.log("valid request");
+                var destinations = {amount : req.body.amount, address : req.body.destination};
+                if (req.body.pid) {
+                    var options = {pid : req.body.PID };
+                }
+                Wallet.transfer(destinations, options).then(function(txids) {
+                    console.log(txids);
+                    return res.send(String(txids));
+
+                });
+
+            }
+
     }
   });
 };
