@@ -16,21 +16,9 @@ var Wallet = new moneroWallet();
 //const xmrTutu = new xmr2btc();
 var dummy = true;
 
-function decimalToHex(d, padding) {
-    var hex = Number(d).toString(16);
-    padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
-    while (hex.length < padding) {
-        hex = "0" + hex;
-    }
-    return hex;
-}
 
-var ToHex = function (sk ) {
-    var i, s = [];
-    for (i = 0; i < sk.length ; i++) s.push(decimalToHex(sk[i], 2));
-        return s.join('');
-}
-    
+
+
 var FromHex = function(sk) {
     b = new Uint8Array(sk.length/2);
     for (i = 0; i < 2*b.length; i+=2) { 

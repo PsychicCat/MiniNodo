@@ -16,6 +16,10 @@
     "request" : "*",
     "JSON" : "*",
     "nedb" : "*",
-    "monero-nodejs" : "*"
+    "monero-nodejs" : "*",
+    "nconf" : "*",
+    "fs" : "*",
+    "pem" : "*",
+    "https" : "*"
   }
 }
