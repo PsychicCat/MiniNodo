@@ -14,6 +14,7 @@ var Wallet = new moneroWallet();
 //const xmr2btc = require('xmrto-api') 
 //const xmrTo = new xmr2btc();
 //const xmrTutu = new xmr2btc();
+var dummy = true;
 
 function decimalToHex(d, padding) {
     var hex = Number(d).toString(16);
@@ -38,20 +39,39 @@ var FromHex = function(sk) {
     return b;
 }
 
-
-
+//Needs a little work..
+var dataDecrypted = function(cipher, nonce) {
+        console.log("attempting to decrypt");
+        console.log(cipher);
+        var hashBytes = nacl.hash(FromHex(MiniNeroPk));
+        var appBytes = nacl.sign.keyPair.fromSeed(hashBytes);
+        console.log("app encryption key", appSecretBytes);
+        var a = nacl.secretbox.open(FromHex(cipher), FromHex(nonce),  appBytes.secretKey);
+        console.log("deciph ", a);
+        return a;
+        
+    }
 
 var appRouter = function(app) {
+
   app.get("/api/mininero/", function(req, res) {
       var seconds = String(Math.floor((new Date).getTime()/1000));
       res.send(seconds);
   }); 
+
   app.post("/api/mininero/", function(req, res) {
       
     var times = Math.floor((new Date).getTime()/1000);
     var timestampi = parseInt(req.body.timestamp, 10);
+
+  //If encryption is on
+  if (req.body.cipher) {
+         console.log("attempting decipher");
+         var deciphered = dataDecrypted(req.body.cipher, req.body.nonce);
+         return res.send("this functionality is under construction");
+  }
         
-if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
+  if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
         return res.send("missing signature, type, or timestamp" + req.body);
 
 
@@ -67,10 +87,15 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
         console.log(ver);
         if (ver == true) {
             Lasttime = times;
-            Wallet.address().then(function(addy) {
-                console.log(addy.address);
-                return res.send(String(addy.address));
-            });
+            if (dummy == false) {
+                Wallet.address().then(function(addy) {
+                    console.log(addy.address);
+                    return res.send(String(addy.address));
+                });
+            } else { 
+                console.log("dummy address");
+                return res.send("dummy address");
+            }
         } else {
             return res.send("incorrect signature");
         }
@@ -85,6 +110,7 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
         if (ver == true) {
             Lasttime = times;
             console.log("balance is:");
+            if (dummy == false) {
             Wallet.balance().then(function(balance) {
                     console.log(balance);
                     console.log("try to get actual");
@@ -94,6 +120,10 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
                     //balanceParsed = JSON.parse(JSON.stringify(balance));
                     return res.send(String(balanceUsual));
             });
+            } else {
+                console.log("balance 0");
+                return res.send("0 balance");
+            }
             //return res.send(Wallet.balance());
         } else {
             return res.send("incorrect signature");
@@ -164,9 +194,13 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
                             var destinations = {amount : xmr_amount, address : xmr_addr};
                             var options = {pid : xmr_pid };
                             if (xmr_pid) {
-                                Wallet.transfer(destinations, options).then(function(txids) {
+                                if (dummy == false) {
+                                    Wallet.transfer(destinations, options).then(function(txids) {
                                     console.log(txids);
                                 });
+                                } else {
+                                     console.log("fake tx id");
+                                     }
                             }
 
                             //Wallet.transfer(destination, options);
@@ -197,11 +231,16 @@ if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
                 if (req.body.pid) {
                     var options = {pid : req.body.PID };
                 }
-                Wallet.transfer(destinations, options).then(function(txids) {
-                    console.log(txids);
-                    return res.send(String(txids));
+                if (dummy ==false) {
+                    Wallet.transfer(destinations, options).then(function(txids) {
+                        console.log(txids);
+                        return res.send(String(txids));
 
-                });
+                    });
+                } else {
+                    console.log("dummy txids");
+                    return res.send("dummy txids");
+                }
 
             }
 
