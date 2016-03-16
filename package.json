@@ -17,6 +17,7 @@
     "JSON" : "*",
     "nedb" : "*",
     "monero-nodejs" : "*",
+    "xmrto-api" : "*",
     "nconf" : "*",
     "fs" : "*",
     "pem" : "*",

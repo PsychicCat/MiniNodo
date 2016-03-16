@@ -9,11 +9,12 @@ var Datastore = require('nedb')
   , db = new Datastore({ filename: '../txndb', autoload: true });
 var moneroWallet = require('monero-nodejs');
 var Wallet = new moneroWallet();
+var nconf = require('nconf');
+nconf.argv().env().file({ file: 'config.json' });
   
 //for whatever reason, couldn't get these to query order as desired..
-//const xmr2btc = require('xmrto-api') 
-//const xmrTo = new xmr2btc();
-//const xmrTutu = new xmr2btc();
+var xmr2btc = require('xmrto-api') 
+var xmrTo = new xmr2btc();
 var dummy = true;
 
 
@@ -42,11 +43,71 @@ var dataDecrypted = function(cipher, nonce) {
 
 var appRouter = function(app) {
 
+  //basic timestamping
   app.get("/api/mininero/", function(req, res) {
       var seconds = String(Math.floor((new Date).getTime()/1000));
       res.send(seconds);
   }); 
-
+  
+  //txns 
+  app.post("/web/mininero/", function(req, res) {
+      
+        var times = Math.floor((new Date).getTime()/1000);
+        var timestampi = parseInt(req.body.timestamp, 10);      
+      
+        if (!req.body.signature || !req.body.timestamp) {
+            return res.send("missing signature, type, or timestamp" + req.body);
+        } else if (Math.abs(times - timestampi) >= 60 ) {
+            //verify timestamp
+            return res.send("timestamp too old..");      
+        }
+        m = "mininerotxnwebview"+req.body.timestamp;
+        console.log("checking signature to server web-view");
+        var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
+        console.log(ver);
+        console.log("lastNonce "+String(lastNonce));
+        console.log("timestampi "+String(timestampi));
+        if (ver == true && timestampi > lastNonce + 1) {
+            lastNonce = timestampi;
+            nconf.set('lastNonce:nonce', lastNonce);
+            
+            res.header('Content-type', 'text/html');
+            var txnpage = '<body style="text-align: center; font-family: monospace">';
+            //res.write(txnpage);
+            db.find({}, function (err, docs) {
+                //console.log(docs);
+                //console.log("\n time:");
+                //console.log(docs[0].time);
+                for (var i = 0 ; i < docs.length ; i++) {
+                        console.log("time:"+docs[i].time+"  "+docs[i].xmramount+ "xmr");
+                        //xmr info
+                        txnpage = txnpage + '<h4>'+docs[i].time+'</h4>';
+                        txnpage = txnpage + ''+docs[i].xmramount+" xmr sent in the following transaction:";
+                        //http://moneroblocks.info/tx/554b99fcf111d45f446937157a12ce1848d9d431c1428186e2cbc2ea55200a78
+                        txnpage = txnpage + '<br><a href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].txid+'</a>';
+                        txnpage = txnpage + '<br>pid: '+docs[i].xmrpid;
+                        //btc info
+                        if (docs[i].destination != "none") {
+                            txnpage = txnpage + '<br><br>'+docs[i].btcamount+" btc sent to the following address:";
+                            //https://blockchain.info/address/1hmicRLjsNnWYvowK3wRrLP3MNw9BS9Za
+                            txnpage = txnpage + '<br><a href="https://blockchain.info/address/'+docs[i].destination+'">'+docs[i].destination+'</a>';
+                            txnpage = txnpage + '<br><a href="https://xmr.to">xmr.to</a> uuid: '+docs[i].xmrtouuid+'</a>';
+                        }
+                        txnpage = txnpage + '<br><br>';
+                    }
+                    res.write(txnpage);
+                    return res.end();
+            });
+        } else {
+            if (ver == false) {
+                return res.send("Bad sig");
+            } else {
+                return res.send("2 second refresh rate");
+            }
+        }
+  }); 
+  
+  
   app.post("/api/mininero/", function(req, res) {
       
     var times = Math.floor((new Date).getTime()/1000);
@@ -61,8 +122,6 @@ var appRouter = function(app) {
         
   if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
         return res.send("missing signature, type, or timestamp" + req.body);
-
-
 
   } else if (Math.abs(times - timestampi) >= 30 ) {
         //verify timestamp
@@ -171,28 +230,39 @@ var appRouter = function(app) {
                             var xmr_amount = second.xmr_required_amount;
                             var xmr_addr = second.xmr_receiving_address;
                             var xmr_pid = second.xmr_required_payment_id;
-                            var txn = { destination : dest,
-                                        btcamount : amount,
-                                        xmrtouuid : uuid,
-                                        xmramount : xmr_amount,
-                                        xmraddr : xmr_addr,
-                                        xmrpid : xmr_pid };
-                            console.log("txn :" + JSON.stringify(txn));
-                            db.insert(txn);
+                            
                             var destinations = {amount : xmr_amount, address : xmr_addr};
                             var options = {pid : xmr_pid };
                             if (xmr_pid) {
                                 if (dummy == false) {
                                     Wallet.transfer(destinations, options).then(function(txids) {
-                                    console.log(txids);
-                                });
+                                        var txn = { destination : dest,
+                                                btcamount : amount,
+                                                xmrtouuid : uuid,
+                                                xmramount : xmr_amount,
+                                                xmraddr : xmr_addr,
+                                                xmrpid : xmr_pid,
+                                                time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                                                txid : String(txids)
+                                        };
+                                        console.log("txn :" + JSON.stringify(txn));
+                                        db.insert(txn);                                
+                                    });
                                 } else {
-                                     console.log("fake tx id");
-                                     }
-                            }
+                                        var txn = { destination : dest,
+                                                btcamount : amount,
+                                                xmrtouuid : uuid,
+                                                xmramount : xmr_amount,
+                                                xmraddr : xmr_addr,
+                                                xmrpid : xmr_pid,
+                                                time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                                                txid : "dummytxnid"
+                                        };
+                                        console.log("txn :" + JSON.stringify(txn));
+                                        db.insert(txn);                                                                 }
+                                }
 
                             //Wallet.transfer(destination, options);
-                            
                             //console.log("it's in db now!");
                             return res.send(uuid); //must have a return or complains about headers
                         });                
@@ -205,34 +275,79 @@ var appRouter = function(app) {
                 return res.send("incorrect signature");
             }
         }
-    } else if (req.body.Type == "sendXMR") {
-    
-            console.log("sending plain old XMR");
-            m = req.body.Type + req.body.amount.replace(".", "d") +  req.body.timestamp + req.body.destination;
-            var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
-            console.log(ver);
-            //check if last request was more than 30 seconds ago.. simple replay avoidance
-            if (ver == true && (Math.abs(Lasttime - times) > 30)) {
-                Lasttime = times;
-                console.log("valid request");
+    //same as "send" but testing whether I can get xmrto-api working
+    } else if (req.body.Type == "sendxmr2api") {
+         
+      console.log("sending");
+      m = req.body.Type + req.body.amount.replace(".", "d") + req.body.timestamp + req.body.destination;
+      var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
+      console.log(ver);
+      //check if last request was more than 30 seconds ago.. simple replay avoidance
+      if (ver == true && (Math.abs(Lasttime - times) > 30)) {
+          //do stuff 
+          console.log("sending xmr2btc via api");
+          res.send("not implemented yet");
+      }
+
+  } else if (req.body.Type == "sendXMR") {
+
+      console.log("sending plain old XMR");
+      m = req.body.Type + req.body.amount.replace(".", "d") + req.body.timestamp + req.body.destination;
+      var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
+      console.log(ver);
+      //check if last request was more than 30 seconds ago.. simple replay avoidance
+      if (ver == true && (Math.abs(Lasttime - times) > 30)) {
+          Lasttime = times;
+          console.log("valid request");
                 var destinations = {amount : req.body.amount, address : req.body.destination};
+                var Pid = "None";
                 if (req.body.pid) {
                     var options = {pid : req.body.PID };
+                    Pid = req.body.PID;
                 }
-                if (dummy ==false) {
+                //log it 
+
+                if (dummy == false) {
+
+                    //send it
                     Wallet.transfer(destinations, options).then(function(txids) {
                         console.log(txids);
+                        
+                        var txn = { destination : "none",
+                            btcamount : "0",
+                            xmrtouuid : "none",
+                            xmramount : req.body.amount,
+                            xmraddr : req.body.destination,
+                            xmrpid : Pid,
+                            time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                            txid : String(txids)
+                        };
+                        console.log("txn :" + JSON.stringify(txn));
+                        db.insert(txn);
                         return res.send(String(txids));
 
                     });
                 } else {
                     console.log("dummy txids");
-                    return res.send("dummy txids");
+                    
+                        var txn = { 
+                            destination : "none",
+                            btcamount : "0",
+                            xmrtouuid : "none",
+                            xmramount : req.body.amount,
+                            xmraddr : req.body.destination,
+                            xmrpid : Pid,
+                            time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                            txid : "dummytxnid"
+                        };
+                        console.log("txn :" + JSON.stringify(txn));
+                        db.insert(txn);      
+                        return res.send("dummy txids");
                 }
-
+            } else {
+                return res.send("incorrect signature");
             }
-
-    }
+        }
   });
 };
 

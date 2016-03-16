@@ -54,7 +54,17 @@ pem.createCertificate({days:365, selfSigned:true}, function(err, keys){
             console.log("MiniNeroPK: "+MiniNeroPk);
             console.log("MiniNeroPk / api_key already set, if you need to reset it, delete config.json and restart app.js");
         }
+        if (!nconf.get("lastNonce")) {
+            lastNonce = Math.floor((new Date).getTime()/1000);
+            } else {
+            lastNonce = nconf.get("lastNonce:nonce");
+        }
+            
         //MiniNeroPk = "cd9db8fafbf2b99605cee870ada0dd64ae5a583a4414c3d5d34e8e8072d520b6"; //Maybe load from a separate file like MiniNero does..
         Lasttime = 0;
+        
+        
+       //txn page test..
+        
     });
 });
