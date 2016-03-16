@@ -17,7 +17,23 @@ var xmr2btc = require('xmrto-api')
 var xmrTo = new xmr2btc();
 var dummy = true;
 
+//helper functions - I assume there is a better place to put these..
 
+
+function decimalToHex(d, padding) {
+    var hex = Number(d).toString(16);
+    padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+    while (hex.length < padding) {
+        hex = "0" + hex;
+    }
+    return hex;
+}
+
+var ToHex = function (sk ) {
+    var i, s = [];
+    for (i = 0; i < sk.length ; i++) s.push(decimalToHex(sk[i], 2));
+        return s.join('');
+}
 
 
 var FromHex = function(sk) {
@@ -28,17 +44,26 @@ var FromHex = function(sk) {
     return b;
 }
 
+function parseQuery(body, qstr) {
+        //var query = {};
+        var a = qstr.split('&');
+        for (var i = 0; i < a.length; i++) {
+            var b = a[i].split('=');
+            body[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
+            console.log("found field:"+decodeURIComponent(b[0]));
+        }
+        return body;
+    }
+
+
 //Needs a little work..
-var dataDecrypted = function(cipher, nonce) {
-        console.log("attempting to decrypt");
-        console.log(cipher);
-        var hashBytes = nacl.hash(FromHex(MiniNeroPk));
-        var appBytes = nacl.sign.keyPair.fromSeed(hashBytes);
-        console.log("app encryption key", appSecretBytes);
-        var a = nacl.secretbox.open(FromHex(cipher), FromHex(nonce),  appBytes.secretKey);
-        console.log("deciph ", a);
-        return a;
+var dataDecrypted = function(body) {
         
+        console.log("attempting to decrypt");
+        //console.log(cipher);
+        var a = nacl.secretbox.open(FromHex(body.cipher), FromHex(body.nonce), FromHex(MiniNeroPk));
+        //console.log("deciph ", a);
+        return parseQuery(body, naclutil.encodeUTF8(a));
     }
 
 var appRouter = function(app) {
@@ -115,9 +140,11 @@ var appRouter = function(app) {
 
   //If encryption is on
   if (req.body.cipher) {
-         console.log("attempting decipher");
-         var deciphered = dataDecrypted(req.body.cipher, req.body.nonce);
-         return res.send("this functionality is under construction");
+         console.log("encrypted data:");
+         console.log(req.body.cipher);
+         req.body = dataDecrypted(req.body);
+         //req.body.Type = decry.Type;
+         console.log("type: "+req.body.Type);
   }
         
   if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
@@ -183,7 +210,7 @@ var appRouter = function(app) {
             return res.send("missing amount or destination");
         } else { 
             
-            console.log("sending");
+            console.log("sending "+req.body.amount);
             m = req.body.Type + req.body.amount.replace(".", "d") +  req.body.timestamp + req.body.destination;
             var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
             console.log(ver);
@@ -272,7 +299,7 @@ var appRouter = function(app) {
                 //return res.send(uuid); //can't have return here if I return in the reqest..
 
             } else {
-                return res.send("incorrect signature");
+                return res.send("incorrect signature or too rapid txns");
             }
         }
     //same as "send" but testing whether I can get xmrto-api working
