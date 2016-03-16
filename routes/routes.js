@@ -329,8 +329,8 @@ var appRouter = function(app) {
                 var destinations = {amount : req.body.amount, address : req.body.destination};
                 var Pid = "None";
                 if (req.body.pid) {
-                    var options = {pid : req.body.PID };
-                    Pid = req.body.PID;
+                    var options = {pid : req.body.pid };
+                    Pid = req.body.pid;
                 }
                 //log it 
 
