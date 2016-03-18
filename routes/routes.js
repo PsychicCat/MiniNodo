@@ -97,7 +97,7 @@ var appRouter = function(app) {
             nconf.set('lastNonce:nonce', lastNonce);
             
             res.header('Content-type', 'text/html');
-            var txnpage = '<body style="text-align: center; font-family: monospace">';
+            var txnpage = '<body style="text-align: center; font-family: monospace; word-wrap:break-word;">';
             //res.write(txnpage);
             db.find({}, function (err, docs) {
                 //console.log(docs);
@@ -109,7 +109,7 @@ var appRouter = function(app) {
                         txnpage = txnpage + '<h4>'+docs[i].time+'</h4>';
                         txnpage = txnpage + ''+docs[i].xmramount+" xmr sent in the following transaction:";
                         //http://moneroblocks.info/tx/554b99fcf111d45f446937157a12ce1848d9d431c1428186e2cbc2ea55200a78
-                        txnpage = txnpage + '<br><a href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].txid+'</a>';
+                        txnpage = txnpage + '<a href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].txid+'</a>';
                         txnpage = txnpage + '<br>pid: '+docs[i].xmrpid;
                         //btc info
                         if (docs[i].destination != "none") {
