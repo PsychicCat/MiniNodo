@@ -8,7 +8,9 @@ This node.js server runs on the same machine as your monero installation and pro
 
 3. In the top MiniNodo directory, use "npm install" to install all the dependency packages listed in package.json
 
-4. To start your server, you can use the command: node MiniNodo.js 0.0.0.0 
+4. To start your server, you can use the command: node MiniNodo.js 0.0.0.0  
+ 
+(4.5 your monero installation should be running in rpc mode: ./simplewallet --wallet-file ~/wallet.bin --password <wallet_password> --rpc-bind-port 18082 )
 
 5. The first time you run the server, it will print out two long hex strings: MiniNeroSK and MiniNeroPk. Save the one it tells you to save to a password manager (I use enpass, but keepass, lastpass also suffice). 
 
