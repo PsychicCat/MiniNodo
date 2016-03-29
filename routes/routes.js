@@ -29,13 +29,14 @@ function decimalToHex(d, padding) {
     return hex;
 }
 
+//input is hex, output is string
 var ToHex = function (sk ) {
     var i, s = [];
     for (i = 0; i < sk.length ; i++) s.push(decimalToHex(sk[i], 2));
         return s.join('');
 }
 
-
+//input is string, output is hex array
 var FromHex = function(sk) {
     b = new Uint8Array(sk.length/2);
     for (i = 0; i < 2*b.length; i+=2) { 
@@ -54,9 +55,16 @@ function parseQuery(body, qstr) {
         }
         return body;
     }
-
-
-//Needs a little work..
+    
+function createResponse(bodyObject) {
+        var a = "&";
+        var rv = "";
+        for (var key in bodyObject) {
+           rv = rv + key + "=" + bodyObject[key] + "&";
+        }
+        return rv;
+    }
+    
 var dataDecrypted = function(body) {
         
         console.log("attempting to decrypt");
@@ -66,6 +74,28 @@ var dataDecrypted = function(body) {
         return parseQuery(body, naclutil.encodeUTF8(a));
     }
 
+var now = function() {
+    return  String(Math.floor((new Date).getTime()/1000));
+}
+    
+    
+//under construction
+var dataEncrypted = function(message) {
+        var nonce = now();
+        while (nonce.length < 48) {
+            nonce = "0"+nonce;
+        }
+        var keypair = nacl.sign.keyPair.fromSeed(FromHex(MiniNeroPk));
+        console.log("got keypair");
+        var encrypted = nacl.box(naclutil.decodeUTF8(message), FromHex(nonce), keypair.publicKey, FromHex(MiniNeroPk));
+        console.log("encrypted thing is"+ToHex(encrypted));
+        var jsonReturn = {"cipher" : ToHex(encrypted), "nonce": nonce};
+        //var encrypted = nacl.secretbox.open(FromHex(body.cipher), keypair.publicKey, FromHex(MiniNeroPk));
+        
+        //console.log("deciph ", a);
+        return createResponse(jsonReturn);
+    }
+    
 var appRouter = function(app) {
 
   //basic timestamping
@@ -159,6 +189,12 @@ var appRouter = function(app) {
         console.log("getting address");
         var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
         console.log(ver);
+        
+        //asdf
+        console.log("trying to encrypt");
+        var en = dataEncrypted("test string to encrypt");
+        console.log("encrypted thing"+en);
+        
         if (ver == true) {
             Lasttime = times;
             if (dummy == false) {
