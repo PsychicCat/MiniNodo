@@ -16,6 +16,7 @@ nconf.argv().env().file({ file: 'config.json' });
 var xmr2btc = require('xmrto-api') 
 var xmrTo = new xmr2btc();
 var dummy = true;
+var useEncryption = false; //this is set in the request for now
 
 //helper functions - I assume there is a better place to put these..
 
@@ -69,6 +70,7 @@ var dataDecrypted = function(body) {
         
         console.log("attempting to decrypt");
         //console.log(cipher);
+        console.log("sk:"+MiniNeroPk);
         var a = nacl.secretbox.open(FromHex(body.cipher), FromHex(body.nonce), FromHex(MiniNeroPk));
         //console.log("deciph ", a);
         return parseQuery(body, naclutil.encodeUTF8(a));
@@ -78,7 +80,6 @@ var now = function() {
     return  String(Math.floor((new Date).getTime()/1000));
 }
     
-    
 //under construction
 var dataEncrypted = function(message) {
         var nonce = now();
@@ -87,7 +88,7 @@ var dataEncrypted = function(message) {
         }
         var keypair = nacl.sign.keyPair.fromSeed(FromHex(MiniNeroPk));
         console.log("got keypair");
-        var encrypted = nacl.box(naclutil.decodeUTF8(message), FromHex(nonce), keypair.publicKey, FromHex(MiniNeroPk));
+        var encrypted = nacl.secretbox(naclutil.decodeUTF8(message), FromHex(nonce), FromHex(MiniNeroPk));
         console.log("encrypted thing is"+ToHex(encrypted));
         var jsonReturn = {"cipher" : ToHex(encrypted), "nonce": nonce};
         //var encrypted = nacl.secretbox.open(FromHex(body.cipher), keypair.publicKey, FromHex(MiniNeroPk));
@@ -95,6 +96,11 @@ var dataEncrypted = function(message) {
         //console.log("deciph ", a);
         return createResponse(jsonReturn);
     }
+    
+    
+    
+    
+
     
 var appRouter = function(app) {
 
@@ -107,6 +113,18 @@ var appRouter = function(app) {
   //txns 
   app.post("/web/mininero/", function(req, res) {
       
+      
+        //If encryption is on
+        var useEncryption = false;
+        if (req.body.cipher) {
+                console.log("encrypted data:");
+                console.log(req.body.cipher);
+                req.body = dataDecrypted(req.body);
+                //req.body.Type = decry.Type;
+                console.log("type: "+req.body.Type);
+                useEncryption = true; //request was made using NaCl encryption, so response will be with NaCl encryption
+        }      
+        
         var times = Math.floor((new Date).getTime()/1000);
         var timestampi = parseInt(req.body.timestamp, 10);      
       
@@ -150,7 +168,7 @@ var appRouter = function(app) {
                         }
                         txnpage = txnpage + '<br><br>';
                     }
-                    res.write(txnpage);
+                    res.write(dataEncrypted(txnpage));
                     return res.end();
             });
         } else {
@@ -169,12 +187,14 @@ var appRouter = function(app) {
     var timestampi = parseInt(req.body.timestamp, 10);
 
   //If encryption is on
+  var useEncryption = false;
   if (req.body.cipher) {
          console.log("encrypted data:");
          console.log(req.body.cipher);
          req.body = dataDecrypted(req.body);
          //req.body.Type = decry.Type;
          console.log("type: "+req.body.Type);
+         useEncryption = true; //request was made using NaCl encryption, so response will be with NaCl encryption
   }
         
   if (!req.body.signature || !req.body.Type || !req.body.timestamp) {
@@ -200,11 +220,22 @@ var appRouter = function(app) {
             if (dummy == false) {
                 Wallet.address().then(function(addy) {
                     console.log(addy.address);
-                    return res.send(String(addy.address));
+                    if (useEncryption == false) {
+                        return res.send(String(addy.address));
+                    } else {
+                        return res.send(dataEncrypted(String(addy.address)));
+                    }
                 });
             } else { 
                 console.log("dummy address");
-                return res.send("dummy address");
+                console.log("useEncryption value"+String(useEncryption))
+                if (useEncryption == false) {
+                    console.log("no encryption response");
+                    return res.send("dummy address");
+                } else {
+                    console.log("yes encryption response");
+                    return res.send(dataEncrypted("dummy address"));
+                }
             }
         } else {
             return res.send("incorrect signature");
@@ -228,11 +259,19 @@ var appRouter = function(app) {
                     //balanceUsual = balance.balance / 1
                     balanceUsual = (balance.balance/1000000000000);
                     //balanceParsed = JSON.parse(JSON.stringify(balance));
-                    return res.send(String(balanceUsual));
+                    if (useEncryption == false) {
+                        return res.send(String(balanceUsual));
+                    } else {
+                        return res.send(dataEncrypted(balanceUsual));
+                    }
             });
             } else {
                 console.log("balance 0");
-                return res.send("0 balance");
+                if (useEncryption == false) {
+                    return res.send("0 balance");
+                } else {
+                    return res.send(dataEncrypted("0 balance"));
+                }
             }
             //return res.send(Wallet.balance());
         } else {
@@ -327,7 +366,11 @@ var appRouter = function(app) {
 
                             //Wallet.transfer(destination, options);
                             //console.log("it's in db now!");
+                            if (useEncryption == false) {
                             return res.send(uuid); //must have a return or complains about headers
+                            } else {
+                                return res.send(dataEncrypted(uuid));
+                            }
                         });                
                     }, 5000);
                  });
@@ -338,6 +381,7 @@ var appRouter = function(app) {
                 return res.send("incorrect signature or too rapid txns");
             }
         }
+        
     //same as "send" but testing whether I can get xmrto-api working
     } else if (req.body.Type == "sendxmr2api") {
          
@@ -387,7 +431,11 @@ var appRouter = function(app) {
                         };
                         console.log("txn :" + JSON.stringify(txn));
                         db.insert(txn);
-                        return res.send(String(txids));
+                        if (useEncryption == false) {
+                            return res.send(String(txids));
+                        } else {
+                            return res.send(dataEncrypted(String(txids)));
+                        }
 
                     });
                 } else {
@@ -405,7 +453,12 @@ var appRouter = function(app) {
                         };
                         console.log("txn :" + JSON.stringify(txn));
                         db.insert(txn);      
-                        return res.send("dummy txids");
+                        if (useEncryption == false) {
+                            return res.send("dummy txids");
+                        } else {
+                            return res.send(dataEncrypted("dummy txids"));
+                        }
+                        
                 }
             } else {
                 return res.send("incorrect signature");
