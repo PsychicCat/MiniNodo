@@ -168,19 +168,19 @@ var appRouter = function(app) {
                 for (var i = 0 ; i < docs.length ; i++) {
                         console.log("time:"+docs[i].time+"  "+docs[i].xmramount+ "xmr");
                         //xmr info
-                        //txnpage = txnpage + '<h4>'+docs[i].time+'</h4>';
                         txnpage = txnpage + '<ul id="items">';
                         txnpage = txnpage + '<big>'+docs[i].time+'</big>';
-                        txnpage = txnpage + '<li>Sent:'+docs[i].xmramount+' xmr </li>';
-                        //txnpage = txnpage + ''+docs[i].xmramount+" xmr sent in the following transaction:";
-                        txnpage = txnpage + '<li><a class="two" href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].txid+'</a></li>';
-                        txnpage = txnpage + '<li>pid: '+docs[i].xmrpid+'</li>';
+                        txnpage = txnpage + '<li>xmr txid: '+docs[i].txid+'</li>';
                         //btc info
                         if (docs[i].destination != "none") {
-                            txnpage = txnpage + '<li>Sent '+docs[i].btcamount+" btc sent to:</li>";
                             //https://blockchain.info/address/1hmicRLjsNnWYvowK3wRrLP3MNw9BS9Za
-                            txnpage = txnpage + '<li><a class="two" href="https://blockchain.info/address/'+docs[i].destination+'">'+docs[i].destination+'</a></li>';
+                            txnpage = txnpage + '<li>btc dest: <a class="two" href="https://blockchain.info/address/'+docs[i].destination+'">'+docs[i].destination+'</a></li>';
+                            txnpage = txnpage + '<li>btc amount: '+docs[i].btcamount+"</li>";
                             txnpage = txnpage + '<li>xmr.to uuid: '+docs[i].xmrtouuid+'</a></li>';
+                        } else {
+                            txnpage = txnpage + '<li>xmr dest:<a class="two" href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].destination+'</a></li>';
+                            txnpage = txnpage + '<li>xmr amount:'+docs[i].xmramount+'</li>';
+                            txnpage = txnpage + '<li>xmr pid: '+docs[i].xmrpid+'</li>';
                         }
                         txnpage = txnpage + '</ul>';
                     }
