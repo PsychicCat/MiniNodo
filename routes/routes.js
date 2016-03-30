@@ -67,7 +67,6 @@ function createResponse(bodyObject) {
     }
     
 var dataDecrypted = function(body) {
-        
         console.log("attempting to decrypt");
         //console.log(cipher);
         console.log("sk:"+MiniNeroPk);
@@ -134,6 +133,15 @@ var appRouter = function(app) {
             //verify timestamp
             return res.send("timestamp too old..");      
         }
+        
+        //dislay colors based on app colors
+        var theme = "dark";
+        if (!req.body.theme) {
+            var theme = "dark";
+        } else {
+            var theme = req.body.theme;
+        }
+        
         m = "mininerotxnwebview"+req.body.timestamp;
         console.log("checking signature to server web-view");
         var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
@@ -145,29 +153,40 @@ var appRouter = function(app) {
             nconf.set('lastNonce:nonce', lastNonce);
             
             res.header('Content-type', 'text/html');
-            var txnpage = '<body style="text-align: center; font-family: monospace; word-wrap:break-word;">';
-            //res.write(txnpage);
-            db.find({}, function (err, docs) {
-                //console.log(docs);
-                //console.log("\n time:");
-                //console.log(docs[0].time);
+            var txnpage = '<html><head><title>Transactions</title><style>';
+            txnpage = txnpage + 'html { margin-left: 0;  background-color: #505050; padding-right:15px; }';
+            txnpage = txnpage + 'body { margin-left: 0;  margin:0; padding:0; padding-right:15px; background-color:  #505050; font-family: monospace; font:  small/1.3em, monospace; }';
+            txnpage = txnpage + 'body #main { margin-left: 0; margin:0; padding:0; padding-right:15px; }';
+            txnpage = txnpage + 'ul#items { margin:0; padding:0; list-style: none;word-wrap:break-word;}';
+            txnpage = txnpage + 'ul#toplist ul {margin-left: 0;  list-style-type: none;  margin:0; list-style: none; font-weight: bold; padding: 0;  border-bottom: 1px solid #fff; color: #FFF; }';
+            txnpage = txnpage + 'ul#toplist ul:hover { margin-left:0; padding:0; list-style-type: none;  margin:0; color: #FFF; background-color: #999; }';
+            txnpage = txnpage + 'a.one:link, a.one:visited { background-color: #5B9A6F; color: white; padding: 14px 25px; text-align: center; text-decoration: none; display: inline-block; }';
+            txnpage = txnpage + 'a.one:hover, a.one:active { background-color: red; }';
+            txnpage = txnpage + 'a.two:link, a.two:visited { text-decoration:none; color:inherit;}';
+            txnpage = txnpage + 'a.two:hover, a.two:active { color:white; font-weight:900; background-color: red; }';            txnpage = txnpage + '</style></head><body> <ul id="toplist">';
+            db.find({}).sort({time: -1}).exec(function (err, docs) {
                 for (var i = 0 ; i < docs.length ; i++) {
                         console.log("time:"+docs[i].time+"  "+docs[i].xmramount+ "xmr");
                         //xmr info
-                        txnpage = txnpage + '<h4>'+docs[i].time+'</h4>';
-                        txnpage = txnpage + ''+docs[i].xmramount+" xmr sent in the following transaction:";
-                        //http://moneroblocks.info/tx/554b99fcf111d45f446937157a12ce1848d9d431c1428186e2cbc2ea55200a78
-                        txnpage = txnpage + '<a href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].txid+'</a>';
-                        txnpage = txnpage + '<br>pid: '+docs[i].xmrpid;
+                        //txnpage = txnpage + '<h4>'+docs[i].time+'</h4>';
+                        txnpage = txnpage + '<ul id="items">';
+                        txnpage = txnpage + '<big>'+docs[i].time+'</big>';
+                        txnpage = txnpage + '<li>Sent:'+docs[i].xmramount+' xmr </li>';
+                        //txnpage = txnpage + ''+docs[i].xmramount+" xmr sent in the following transaction:";
+                        txnpage = txnpage + '<li><a class="two" href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].txid+'</a></li>';
+                        txnpage = txnpage + '<li>pid: '+docs[i].xmrpid+'</li>';
                         //btc info
                         if (docs[i].destination != "none") {
-                            txnpage = txnpage + '<br><br>'+docs[i].btcamount+" btc sent to the following address:";
+                            txnpage = txnpage + '<li>Sent '+docs[i].btcamount+" btc sent to:</li>";
                             //https://blockchain.info/address/1hmicRLjsNnWYvowK3wRrLP3MNw9BS9Za
-                            txnpage = txnpage + '<br><a href="https://blockchain.info/address/'+docs[i].destination+'">'+docs[i].destination+'</a>';
-                            txnpage = txnpage + '<br><a href="https://xmr.to">xmr.to</a> uuid: '+docs[i].xmrtouuid+'</a>';
+                            txnpage = txnpage + '<li><a class="two" href="https://blockchain.info/address/'+docs[i].destination+'">'+docs[i].destination+'</a></li>';
+                            txnpage = txnpage + '<li>xmr.to uuid: '+docs[i].xmrtouuid+'</a></li>';
                         }
-                        txnpage = txnpage + '<br><br>';
+                        txnpage = txnpage + '</ul>';
                     }
+                    txnpage = txnpage + '</ul>';
+                    txnpage = txnpage + '<center><h2><a class="one" href="http://moneroblocks.info/">Monero Block Explorer</a></h2></center>';
+                    txnpage = txnpage + '<center><h2><a class="one" href="https://xmr.to">Xmr.to</a></h2></center>';
                     res.write(dataEncrypted(txnpage));
                     return res.end();
             });
