@@ -1,5 +1,5 @@
 echo -n Password: 
 read -s password
-echo -n 'WalletFile? ~/wallet/testwallet1'
+echo -n 'WalletFile? e.g.  /azurewallet\n'
 read -s walletfile
-./simplewallet --wallet-file $walletfile --password $password --rpc-bind-port 18082
+/tmp/simplewallet --wallet-file $walletfile --password $password --rpc-bind-port 18082
