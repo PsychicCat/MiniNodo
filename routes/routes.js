@@ -154,16 +154,16 @@ var appRouter = function(app) {
             
             res.header('Content-type', 'text/html');
             var txnpage = '<html><head><title>Transactions</title><style>';
-            txnpage = txnpage + 'html { margin-left: 0;  background-color: #505050; padding-right:15px; }';
-            txnpage = txnpage + 'body { margin-left: 0;  margin:0; padding:0; padding-right:15px; background-color:  #505050; font-family: monospace; font:  small/1.3em, monospace; }';
-            txnpage = txnpage + 'body #main { margin-left: 0; margin:0; padding:0; padding-right:15px; }';
+            txnpage = txnpage + 'html { background-color: #505050; }';
+            txnpage = txnpage + 'body { background-color:  #505050; font-family: Courier; font:Courier; }';
             txnpage = txnpage + 'ul#items { margin:0; padding:0; list-style: none;word-wrap:break-word;}';
-            txnpage = txnpage + 'ul#toplist ul {margin-left: 0;  list-style-type: none;  margin:0; list-style: none; font-weight: bold; padding: 0;  border-bottom: 1px solid #fff; color: #FFF; }';
+            txnpage = txnpage + 'ul#toplist ul {margin-left: 0;  list-style-type: none;  list-style: none;  padding: 0;  border-bottom: 1px solid #fff; color: #FFF; }';
             txnpage = txnpage + 'ul#toplist ul:hover { margin-left:0; padding:0; list-style-type: none;  margin:0; color: #FFF; background-color: #999; }';
             txnpage = txnpage + 'a.one:link, a.one:visited { background-color: #5B9A6F; color: white; padding: 14px 25px; text-align: center; text-decoration: none; display: inline-block; }';
             txnpage = txnpage + 'a.one:hover, a.one:active { background-color: red; }';
             txnpage = txnpage + 'a.two:link, a.two:visited { text-decoration:none; color:inherit;}';
-            txnpage = txnpage + 'a.two:hover, a.two:active { color:white; font-weight:900; background-color: red; }';            txnpage = txnpage + '</style></head><body> <ul id="toplist">';
+            txnpage = txnpage + 'a.two:hover, a.two:active { color:white; font-weight:bold; background-color: red; }';            
+            txnpage = txnpage + '</style></head><body> <ul id="toplist">';
             db.find({}).sort({time: -1}).exec(function (err, docs) {
                 for (var i = 0 ; i < docs.length ; i++) {
                         console.log("time:"+docs[i].time+"  "+docs[i].xmramount+ "xmr");
@@ -187,7 +187,11 @@ var appRouter = function(app) {
                     txnpage = txnpage + '</ul>';
                     txnpage = txnpage + '<center><h2><a class="one" href="http://moneroblocks.info/">Monero Block Explorer</a></h2></center>';
                     txnpage = txnpage + '<center><h2><a class="one" href="https://xmr.to">Xmr.to</a></h2></center>';
+                    if (useEncryption == true) {
                     res.write(dataEncrypted(txnpage));
+                    } else {
+                     res.write(txnpage);
+                     }
                     return res.end();
             });
         } else {
