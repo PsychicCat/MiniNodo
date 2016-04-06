@@ -5,8 +5,52 @@ var bodyParser = require("body-parser");
 var nacl = require("tweetnacl");
 var fs    = require('fs');
 var nconf = require('nconf');
+var Datastore = require('nedb')
+  , db = new Datastore({ filename: 'txndb', autoload: true });
+
+
 //https://www.npmjs.com/package/tweetnacl
 //https://tweetnacl.cr.yp.to/
+
+var moneroWallet = require('monero-nodejs');
+var Wallet = new moneroWallet();
+
+var approxTime = function(height) {
+    if (height <= 1009827) {
+        return 1458748658 - 2 * 60 * (1009827 - height)
+    } else {
+        return (height - 1009827) * 2 * 60 + 1458748658
+    }
+}
+var now = function() {
+    return  String(Math.floor((new Date).getTime()/1000));
+}
+function checkTransfers() {
+    Wallet.incomingTransfers("all").then(function(txns) {
+        for (var i = 0 ; i < txns['transfers'].length ; i++) {
+            txn = txns['transfers'][String(i)];
+            keys = Object.keys(txn);
+            keys.forEach(function(entry) {
+                console.log(entry+": "+txn[entry]);
+            });
+            //note the "time" below won't reflect actual time received, instead the time inserted to db..
+            var txnsave = { destination : "me",
+                            xmramount : parseInt(txn['amount'])/1000000000000.0,
+                            time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                            txid : txn['tx_hash'].replace('<', "").replace('>', ""),
+                            _id : txn['tx_hash'].replace('<', "").replace('>', "")
+            };
+            console.log("txn :" + JSON.stringify(txnsave));
+            try {
+                db.insert(txnsave);                                
+            } catch(err) {
+                console.log("already inserted!");
+            }
+        }
+    });
+}
+
+
 
 function decimalToHex(d, padding) {
     var hex = Number(d).toString(16);
@@ -35,6 +79,8 @@ pem.createCertificate({days:365, selfSigned:true}, function(err, keys){
     //var server = app.listen(3000,  function () {
     var server = https.createServer({key: keys.serviceKey, cert: keys.certificate}, app).listen(3000, function()  {
         console.log("Listening on port %s...", server.address().port);
+        //check every 60 seconds for new transfers, which is half of the block-speed
+        var txnChecker = setInterval(checkTransfers, 60 * 1000);
         if (!nconf.get("MiniNeroPk")) {
             skpk = nacl.sign.keyPair();
             console.log("this is your api secret key (store in the app /password manager but keep secret!)");

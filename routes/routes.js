@@ -154,45 +154,50 @@ var appRouter = function(app) {
             
             res.header('Content-type', 'text/html');
             var txnpage = '<html><head><title>Transactions</title><style>';
-            txnpage = txnpage + 'html { background-color: #505050; }';
-            txnpage = txnpage + 'body { background-color:  #505050; font-family: Courier; font:Courier; }';
-            txnpage = txnpage + 'ul#items { margin:0; padding:0; list-style: none;word-wrap:break-word;}';
-            txnpage = txnpage + 'ul#toplist ul {margin-left: 0;  list-style-type: none;  list-style: none;  padding: 0;  border-bottom: 1px solid #fff; color: #FFF; }';
-            txnpage = txnpage + 'ul#toplist ul:hover { margin-left:0; padding:0; list-style-type: none;  margin:0; color: #FFF; background-color: #999; }';
+            txnpage = txnpage + 'html { background-color: #505050; } \n';
+            txnpage = txnpage + 'body { background-color:  #505050; font-family: Courier; font:Courier; } \n';
+            txnpage = txnpage + '.rarrow_box {width:61%; margin:5px; word-wrap:break-word; position: relative; float:left; background: #5b9a6f; } .rarrow_box:after { left: 100%; top: 50%; border: solid transparent; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; border-color: rgba(91, 154, 111, 0); border-left-color: #5b9a6f; border-width: 30px; margin-top: -30px; }'
+            txnpage = txnpage + '.larrow_box {width:61%; margin:5px; word-wrap:break-word; position: relative; float:right; background: #fff; } .larrow_box:after { right: 100%; top: 50%; border: solid transparent; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; border-color: rgba(255, 255, 255, 0); border-right-color: #fff; border-width: 30px; margin-top: -30px; }';
             txnpage = txnpage + 'a.one:link, a.one:visited { background-color: #5B9A6F; color: white; padding: 14px 25px; text-align: center; text-decoration: none; display: inline-block; }';
             txnpage = txnpage + 'a.one:hover, a.one:active { background-color: red; }';
             txnpage = txnpage + 'a.two:link, a.two:visited { text-decoration:none; color:inherit;}';
             txnpage = txnpage + 'a.two:hover, a.two:active { color:white; font-weight:bold; background-color: red; }';            
-            txnpage = txnpage + '</style></head><body> <ul id="toplist">';
+            txnpage = txnpage + '</style></head><body>';
             db.find({}).sort({time: -1}).exec(function (err, docs) {
                 for (var i = 0 ; i < docs.length ; i++) {
-                        console.log("time:"+docs[i].time+"  "+docs[i].xmramount+ "xmr");
-                        //xmr info
-                        txnpage = txnpage + '<ul id="items">';
-                        txnpage = txnpage + '<big>'+docs[i].time+'</big>';
-                        txnpage = txnpage + '<li>xmr txid: '+docs[i].txid+'</li>';
-                        //btc info
-                        if (docs[i].destination != "none") {
-                            //https://blockchain.info/address/1hmicRLjsNnWYvowK3wRrLP3MNw9BS9Za
-                            txnpage = txnpage + '<li>btc dest: <a class="two" href="https://blockchain.info/address/'+docs[i].destination+'">'+docs[i].destination+'</a></li>';
-                            txnpage = txnpage + '<li>btc amount: '+docs[i].btcamount+"</li>";
-                            txnpage = txnpage + '<li>xmr.to uuid: '+docs[i].xmrtouuid+'</a></li>';
-                        } else {
-                            txnpage = txnpage + '<li>xmr dest:<a class="two" href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].destination+'</a></li>';
-                            txnpage = txnpage + '<li>xmr amount:'+docs[i].xmramount+'</li>';
-                            txnpage = txnpage + '<li>xmr pid: '+docs[i].xmrpid+'</li>';
-                        }
-                        txnpage = txnpage + '</ul>';
+                    console.log("time:"+docs[i].time+"  "+docs[i].xmramount+ "xmr");
+                    //received
+                    if (docs[i].destination == "me") {
+                        txnpage = txnpage + '<div class="larrow_box">';
+                    } else {
+                        txnpage = txnpage +  '<div class="rarrow_box">';
+                    }
+                    //txnpage = txnpage +  '<ul id="items">';
+                    txnpage = txnpage + '<big>'+docs[i].time+'</big>';
+                    txnpage = txnpage + '<ul>';
+                    txnpage = txnpage + '<li>xmr txid: <a class="two" href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].txid+'</a></li>';
+                    //btc info
+                    if ((docs[i].destination != "none") && (docs[i].destination != "me")) {
+                        //https://blockchain.info/address/1hmicRLjsNnWYvowK3wRrLP3MNw9BS9Za
+                        txnpage = txnpage + '<li>btc dest: <a class="two" href="https://blockchain.info/address/'+docs[i].destination+'">'+docs[i].destination+'</a></li>';
+                        txnpage = txnpage + '<li>btc amount: '+docs[i].btcamount+"</li>";
+                        txnpage = txnpage + '<li>xmr.to uuid: '+docs[i].xmrtouuid+'</a></li>';
+                    } else {
+                        txnpage = txnpage + '<li>xmr dest:<a class="two" href="http://moneroblocks.info/tx/'+docs[i].txid+'">'+docs[i].destination+'</a></li>';
+                        txnpage = txnpage + '<li>xmr amount:'+docs[i].xmramount+'</li>';
+                        txnpage = txnpage + '<li>xmr pid: '+docs[i].xmrpid+'</li>';
                     }
                     txnpage = txnpage + '</ul>';
-                    txnpage = txnpage + '<center><h2><a class="one" href="http://moneroblocks.info/">Monero Block Explorer</a></h2></center>';
-                    txnpage = txnpage + '<center><h2><a class="one" href="https://xmr.to">Xmr.to</a></h2></center>';
-                    if (useEncryption == true) {
-                    res.write(dataEncrypted(txnpage));
-                    } else {
-                     res.write(txnpage);
-                     }
-                    return res.end();
+                    txnpage = txnpage + '</div></br></br>';
+                }
+                txnpage = txnpage + '<center><h2><a class="one" href="http://moneroblocks.info/">Monero Block Explorer</a></h2></center>';
+                txnpage = txnpage + '<center><h2><a class="one" href="https://xmr.to">Xmr.to</a></h2></center>';
+                if (useEncryption == true) {
+                res.write(dataEncrypted(txnpage));
+                } else {
+                 res.write(txnpage);
+                }
+                return res.end();
             });
         } else {
             if (ver == false) {
@@ -368,7 +373,8 @@ var appRouter = function(app) {
                                                 xmraddr : xmr_addr,
                                                 xmrpid : xmr_pid,
                                                 time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                                                txid : String(txids)
+                                                txid : String(txids),
+                                                _id : String(txids)
                                         };
                                         console.log("txn :" + JSON.stringify(txn));
                                         db.insert(txn);                                
@@ -450,7 +456,9 @@ var appRouter = function(app) {
                             xmraddr : req.body.destination,
                             xmrpid : Pid,
                             time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                            txid : String(txids)
+                            txid : String(txids),
+                            _id : String(txids)
+
                         };
                         console.log("txn :" + JSON.stringify(txn));
                         db.insert(txn);
