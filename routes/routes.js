@@ -158,10 +158,12 @@ var appRouter = function(app) {
             txnpage = txnpage + 'body { background-color:  #505050; font-family: Courier; font:Courier; } \n';
             txnpage = txnpage + '.rarrow_box {width:61%; margin:5px; word-wrap:break-word; position: relative; float:left; background: #5b9a6f; } .rarrow_box:after { left: 100%; top: 50%; border: solid transparent; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; border-color: rgba(91, 154, 111, 0); border-left-color: #5b9a6f; border-width: 30px; margin-top: -30px; }'
             txnpage = txnpage + '.larrow_box {width:61%; margin:5px; word-wrap:break-word; position: relative; float:right; background: #fff; } .larrow_box:after { right: 100%; top: 50%; border: solid transparent; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; border-color: rgba(255, 255, 255, 0); border-right-color: #fff; border-width: 30px; margin-top: -30px; }';
-            txnpage = txnpage + 'a.one:link, a.one:visited { background-color: #5B9A6F; color: white; padding: 14px 25px; text-align: center; text-decoration: none; display: inline-block; }';
-            txnpage = txnpage + 'a.one:hover, a.one:active { background-color: red; }';
-            txnpage = txnpage + 'a.two:link, a.two:visited { text-decoration:none; color:inherit;}';
-            txnpage = txnpage + 'a.two:hover, a.two:active { color:white; font-weight:bold; background-color: red; }';            
+
+            txnpage = txnpage + 'a.one:link, a.one:visited {background-color: #5B9A6F; color: white; padding: 14px 25px; text-align: center; text-decoration: none; display: inline-block; clear:both;}';
+            txnpage = txnpage + 'a.one:hover, a.one:active { background-color: red; } ';
+            txnpage = txnpage + 'a.two:link, a.two:visited { text-decoration:none; color:inherit; clear:both;} ';
+            txnpage = txnpage + 'a.two:hover, a.two:active { color:white; font-weight:bold; background-color: red; } ';            
+            txnpage = txnpage + '.clearfix:after {content:"."; display:block; height:0; clear:both; visibility:hidden;} ';
             txnpage = txnpage + '</style></head><body>';
             db.find({}).sort({time: -1}).exec(function (err, docs) {
                 for (var i = 0 ; i < docs.length ; i++) {
@@ -188,10 +190,11 @@ var appRouter = function(app) {
                         txnpage = txnpage + '<li>xmr pid: '+docs[i].xmrpid+'</li>';
                     }
                     txnpage = txnpage + '</ul>';
-                    txnpage = txnpage + '</div></br></br>';
+                    txnpage = txnpage + '</div>';
                 }
+                txnpage = txnpage + '<br><div class="clearfix"></div><div>';
                 txnpage = txnpage + '<center><h2><a class="one" href="http://moneroblocks.info/">Monero Block Explorer</a></h2></center>';
-                txnpage = txnpage + '<center><h2><a class="one" href="https://xmr.to">Xmr.to</a></h2></center>';
+                txnpage = txnpage + '<center><h2><a class="one" href="https://xmr.to">Xmr.to</a></h2></center></div>';
                 if (useEncryption == true) {
                 res.write(dataEncrypted(txnpage));
                 } else {
