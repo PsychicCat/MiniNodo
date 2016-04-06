@@ -376,8 +376,9 @@ var appRouter = function(app) {
                                                 xmraddr : xmr_addr,
                                                 xmrpid : xmr_pid,
                                                 time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                                                txid : String(txids),
-                                                _id : String(txids)
+                                                txid : String(txids['tx_hash'].replace("<", "").replace(">", "")),
+                                                _id : String(txids['tx_hash'].replace("<", "").replace(">", ""))
+
                                         };
                                         console.log("txn :" + JSON.stringify(txn));
                                         db.insert(txn);                                
@@ -451,7 +452,6 @@ var appRouter = function(app) {
                     //send it
                     Wallet.transfer(destinations, options).then(function(txids) {
                         console.log(txids);
-                        
                         var txn = { destination : "none",
                             btcamount : "0",
                             xmrtouuid : "none",
@@ -459,8 +459,9 @@ var appRouter = function(app) {
                             xmraddr : req.body.destination,
                             xmrpid : Pid,
                             time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                            txid : String(txids),
-                            _id : String(txids)
+                            txid : String(txids['tx_hash'].replace("<", "").replace(">", "")),
+                            _id : String(txids['tx_hash'].replace("<", "").replace(">", ""))
+
 
                         };
                         console.log("txn :" + JSON.stringify(txn));
@@ -484,6 +485,7 @@ var appRouter = function(app) {
                             xmrpid : Pid,
                             time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
                             txid : "dummytxnid"
+
                         };
                         console.log("txn :" + JSON.stringify(txn));
                         db.insert(txn);      
