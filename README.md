@@ -24,4 +24,8 @@ Otherwise, for actual usage with Monero (use at your own risk!) you can change t
 
 dummy = false; 
 
+#Notes
+1. My next aim is to improve user-friendliness of this code / repo. 
+2. Use at your own risk. 
+
 
