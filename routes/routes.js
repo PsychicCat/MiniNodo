@@ -15,7 +15,7 @@ nconf.argv().env().file({ file: 'config.json' });
 //for whatever reason, couldn't get these to query order as desired..
 var xmr2btc = require('xmrto-api') 
 var xmrTo = new xmr2btc();
-var dummy = true;
+var dummy = false;
 var useEncryption = false; //this is set in the request for now
 
 //helper functions - I assume there is a better place to put these..

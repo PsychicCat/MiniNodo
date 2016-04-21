@@ -25,32 +25,67 @@ var approxTime = function(height) {
 var now = function() {
     return  String(Math.floor((new Date).getTime()/1000));
 }
+
+//
+//Check for incoming transfers, and add new transfers to wallet..
+//
 function checkTransfers() {
-    Wallet.incomingTransfers("all").then(function(txns) {
-        for (var i = 0 ; i < txns['transfers'].length ; i++) {
-            txn = txns['transfers'][String(i)];
-            keys = Object.keys(txn);
-            keys.forEach(function(entry) {
-                console.log(entry+": "+txn[entry]);
-            });
-            //note the "time" below won't reflect actual time received, instead the time inserted to db..
-            var txnsave = { destination : "me",
-                            xmramount : parseInt(txn['amount'])/1000000000000.0,
-                            time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                            txid : txn['tx_hash'].replace('<', "").replace('>', ""),
-                            _id : txn['tx_hash'].replace('<', "").replace('>', "")
-            };
-            console.log("txn :" + JSON.stringify(txnsave));
-            try {
-                db.insert(txnsave);                                
-            } catch(err) {
-                console.log("already inserted!");
+    Wallet.incomingTransfers("all").then(function(t) {
+        //console.log(t.transfers);
+        console.log("Checking for incoming transactions..");
+        tx = t.transfers
+        tx_hashes = []
+        tmp = ""
+        tx_amounts = []
+        try {
+            var i = 0;
+            var n = -1;
+            while (i < tx.length) {
+                tmp = tx[i].tx_hash;
+                tx_amounts.push(tx[i].amount /  1000000000000.0);
+                tx_hashes.push(tmp.replace("<","").replace(">",""));
+                n++;
+                j = i+1;
+                //group transactions with same txn hash
+                while (j < tx.length) {
+                    if (tx[j].tx_hash != tmp) {
+                        break;
+                    } else {
+                        tx_amounts[n] += tx[j].amount / 1000000000000.0;
+                    }
+                    j++;
+                }
+                var txnsave = { destination : "me",
+                    xmramount : tx_amounts[n],
+                    time : new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                    txid : tx_hashes[n],
+                    _id : tx_hashes[n]
+                };
+                try {
+                    db.insert(txnsave);                                
+                } catch(err) {
+                    //already inserted!
+                }
+                i = j;
             }
+        } catch (errit) {
+            console.log("error in checking transactions!");
         }
+        console.log("checked transactions.");
+
     });
+
 }
 
 
+//remove old incoming transfers, and add them again, parsed properly
+//Note, this will mess up the time received, so only use it sparingly!
+function reCheckTransfers() {
+    db.remove({ destination: 'me' }, { multi: true }, function (err, numRemoved) {
+        console.log("number of documents removed:", numRemoved);
+    });
+    checkTransfers();
+}
 
 function decimalToHex(d, padding) {
     var hex = Number(d).toString(16);
@@ -66,9 +101,18 @@ var ToHex = function (sk ) {
     for (i = 0; i < sk.length ; i++) s.push(decimalToHex(sk[i], 2));
         return s.join('');
 }
+
      
 nconf.argv().env().file({ file: 'config.json' });
+
+//set this true, to update from old-style parsing.
+if (1 == 0) {
+    reCheckTransfers();
+} else {
+    checkTransfers();
+}
  
+//Update to use a let's encrypt certificate..
 pem.createCertificate({days:365, selfSigned:true}, function(err, keys){
     var app = express();
     app.use(bodyParser.json());
@@ -81,6 +125,8 @@ pem.createCertificate({days:365, selfSigned:true}, function(err, keys){
         console.log("Listening on port %s...", server.address().port);
         //check every 60 seconds for new transfers, which is half of the block-speed
         var txnChecker = setInterval(checkTransfers, 60 * 1000);
+        
+        //replace with qr in web-browser
         if (!nconf.get("MiniNeroPk")) {
             skpk = nacl.sign.keyPair();
             console.log("this is your api secret key (store in the app /password manager but keep secret!)");
@@ -105,12 +151,6 @@ pem.createCertificate({days:365, selfSigned:true}, function(err, keys){
             } else {
             lastNonce = nconf.get("lastNonce:nonce");
         }
-            
-        //MiniNeroPk = "cd9db8fafbf2b99605cee870ada0dd64ae5a583a4414c3d5d34e8e8072d520b6"; //Maybe load from a separate file like MiniNero does..
         Lasttime = 0;
-        
-        
-       //txn page test..
-        
     });
 });
