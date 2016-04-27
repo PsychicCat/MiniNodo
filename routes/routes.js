@@ -13,14 +13,9 @@ var nconf = require('nconf');
 nconf.argv().env().file({ file: 'config.json' });
 
 //for whatever reason, couldn't get these to query order as desired..
-var xmr2btc = require('xmrto-api')
-var xmrTo = new xmr2btc();
-var dummy = false;
 var useEncryption = false; //this is set in the request for now
 
 //helper functions - I assume there is a better place to put these..
-
-
 function decimalToHex(d, padding) {
     var hex = Number(d).toString(16);
     padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
@@ -79,7 +74,7 @@ var now = function () {
     return String(Math.floor((new Date).getTime() / 1000));
 }
 
-//under construction
+//Encrypt json
 var dataEncrypted = function (message) {
     var nonce = now();
     while (nonce.length < 48) {
@@ -95,11 +90,6 @@ var dataEncrypted = function (message) {
     //console.log("deciph ", a);
     return createResponse(jsonReturn);
 }
-
-
-
-
-
 
 var appRouter = function (app) {
 
@@ -118,12 +108,8 @@ var appRouter = function (app) {
         //If encryption is on
         var useEncryption = false;
         if (req.body.cipher) {
-            console.log("encrypted data:");
-            console.log(req.body.cipher);
             req.body = dataDecrypted(req.body);
-            //req.body.Type = decry.Type;
-            console.log("type: " + req.body.Type);
-            useEncryption = true; //request was made using NaCl encryption, so response will be with NaCl encryption
+            useEncryption = true;
         }
 
         var times = Math.floor((new Date).getTime() / 1000);
@@ -132,28 +118,15 @@ var appRouter = function (app) {
         if (!req.body.signature || !req.body.timestamp) {
             return res.send("missing signature, type, or timestamp" + req.body);
         } else if (Math.abs(times - timestampi) >= 60) {
-            //verify timestamp
             return res.send("timestamp too old..");
-        }
-
-        //dislay colors based on app colors
-        var theme = "dark";
-        if (!req.body.theme) {
-            var theme = "dark";
-        } else {
-            var theme = req.body.theme;
         }
 
         m = "mininerotxnwebview" + req.body.timestamp;
         console.log("checking signature to server web-view");
         var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
-        console.log(ver);
-        console.log("lastNonce " + String(lastNonce));
-        console.log("timestampi " + String(timestampi));
         if (ver == true && timestampi > lastNonce + 1) {
             lastNonce = timestampi;
             nconf.set('lastNonce:nonce', lastNonce);
-
             res.header('Content-type', 'text/html');
             var txnpage = '<html><head><title>Transactions</title><style>';
             txnpage = txnpage + 'html { background-color: #505050; } \n';
@@ -216,15 +189,10 @@ var appRouter = function (app) {
     //txns (just returns a json of the transactions if authentication succeeds)
     app.post("/api/transactions/", function (req, res) {
 
-
         //If encryption is on
         var useEncryption = false;
         if (req.body.cipher) {
-            console.log("encrypted data:");
-            console.log(req.body.cipher);
             req.body = dataDecrypted(req.body);
-            //req.body.Type = decry.Type;
-            console.log("type: " + req.body.Type);
             useEncryption = true; //request was made using NaCl encryption, so response will be with NaCl encryption
         }
 
@@ -234,7 +202,6 @@ var appRouter = function (app) {
         if (!req.body.signature || !req.body.timestamp) {
             return res.send("missing signature, type, or timestamp" + req.body);
         } else if (Math.abs(times - timestampi) >= 60) {
-            //verify timestamp
             return res.send("timestamp too old..");
         }
         if (ver == true && timestampi > lastNonce + 1) {
@@ -243,12 +210,10 @@ var appRouter = function (app) {
             db.find({}).sort({ time: -1 }).exec(function (err, docs) {
                 console.log("docs:");
                 console.log(JSON.stringify(docs));
-
                 return res.send(JSON.stringify(docs));
             });
         }
     });
-
 
     app.post("/api/mininero/", function (req, res) {
 
@@ -273,95 +238,53 @@ var appRouter = function (app) {
             //verify timestamp
             return res.send("timestamp too old..");
 
-        } else if (req.body.Type == "address") {
-            m = req.body.Type + req.body.timestamp;
-            console.log("getting address");
-            var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
-            console.log(ver);
+        }
 
-            //asdf
-            console.log("trying to encrypt");
+
+        if (req.body.Type == "address") {
+            m = req.body.Type + req.body.timestamp;
+            var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
             var en = dataEncrypted("test string to encrypt");
-            console.log("encrypted thing" + en);
 
             if (ver == true) {
                 Lasttime = times;
-                if (dummy == false) {
-                    Wallet.address().then(function (addy) {
-                        console.log(addy.address);
-                        if (useEncryption == false) {
-                            return res.send(String(addy.address));
-                        } else {
-                            return res.send(dataEncrypted(String(addy.address)));
-                        }
-                    });
-                } else {
-                    console.log("dummy address");
-                    console.log("useEncryption value" + String(useEncryption))
+                Wallet.address().then(function (addy) {
+                    console.log(addy.address);
                     if (useEncryption == false) {
-                        console.log("no encryption response");
-                        return res.send("dummy address");
+                        return res.send(String(addy.address));
                     } else {
-                        console.log("yes encryption response");
-                        return res.send(dataEncrypted("dummy address"));
+                        return res.send(dataEncrypted(String(addy.address)));
                     }
-                }
+                });
             } else {
                 return res.send("incorrect signature");
             }
-
-
-
         } else if (req.body.Type == "balance") {
             m = req.body.Type + req.body.timestamp;
             console.log("getting balance");
             var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
-            console.log(ver);
             if (ver == true) {
                 Lasttime = times;
-                console.log("balance is:");
-                if (dummy == false) {
-                    Wallet.balance().then(function (balance) {
-                        console.log(balance);
-                        console.log("try to get actual");
-                        console.log(balance.balance / 1000000000000);
-                        //balanceUsual = balance.balance / 1
-                        balanceUsual = (balance.balance / 1000000000000);
-                        //balanceParsed = JSON.parse(JSON.stringify(balance));
-                        if (useEncryption == false) {
-                            return res.send(String(balanceUsual));
-                        } else {
-                            return res.send(dataEncrypted(balanceUsual));
-                        }
-                    });
-                } else {
-                    console.log("balance 0");
+                Wallet.balance().then(function (balance) {
+                    balanceUsual = (balance.balance / 1000000000000);
                     if (useEncryption == false) {
-                        return res.send("0 balance");
+                        return res.send(String(balanceUsual));
                     } else {
-                        return res.send(dataEncrypted("0 balance"));
+                        return res.send(dataEncrypted(balanceUsual));
                     }
-                }
-                //return res.send(Wallet.balance());
+                });
             } else {
                 return res.send("incorrect signature");
             }
-
-
-
         } else if (req.body.Type == "send") {
             if (!req.body.amount || !req.body.destination) {
                 return res.send("missing amount or destination");
             } else {
-
-                console.log("sending " + req.body.amount);
                 m = req.body.Type + req.body.amount.replace(".", "d") + req.body.timestamp + req.body.destination;
                 var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
-                console.log(ver);
                 //check if last request was more than 30 seconds ago.. simple replay avoidance
                 if (ver == true && (Math.abs(Lasttime - times) > 30)) {
                     Lasttime = times;
-                    console.log("attempting btc2xmr via xmr.to");
                     var uuid = "unknown"
                     dest = req.body.destination;
                     amount = req.body.amount;
@@ -392,11 +315,6 @@ var appRouter = function (app) {
 
                         setTimeout(function () {
                             request2(options2, function (error2, response2, body2) {
-                                //get xmr dest, pid, amount
-                                //log these to db with uuid
-                                //do rpc call
-                                //console.log("uuid in request2",  uuid);
-                                //console.log("body2"+body2);
                                 var second = JSON.parse(body2);
                                 var xmr_amount = second.xmr_required_amount;
                                 var xmr_addr = second.xmr_receiving_address;
@@ -405,24 +323,7 @@ var appRouter = function (app) {
                                 var destinations = { amount: xmr_amount, address: xmr_addr };
                                 var options = { pid: xmr_pid };
                                 if (xmr_pid) {
-                                    if (dummy == false) {
-                                        Wallet.transfer(destinations, options).then(function (txids) {
-                                            var txn = {
-                                                destination: dest,
-                                                btcamount: amount,
-                                                xmrtouuid: uuid,
-                                                xmramount: xmr_amount,
-                                                xmraddr: xmr_addr,
-                                                xmrpid: xmr_pid,
-                                                time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                                                txid: String(txids['tx_hash'].replace("<", "").replace(">", "")),
-                                                _id: String(txids['tx_hash'].replace("<", "").replace(">", ""))
-
-                                            };
-                                            console.log("txn :" + JSON.stringify(txn));
-                                            db.insert(txn);
-                                        });
-                                    } else {
+                                    Wallet.transfer(destinations, options).then(function (txids) {
                                         var txn = {
                                             destination: dest,
                                             btcamount: amount,
@@ -431,15 +332,14 @@ var appRouter = function (app) {
                                             xmraddr: xmr_addr,
                                             xmrpid: xmr_pid,
                                             time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                                            txid: "dummytxnid"
+                                            txid: String(txids['tx_hash'].replace("<", "").replace(">", "")),
+                                            _id: String(txids['tx_hash'].replace("<", "").replace(">", ""))
+
                                         };
                                         console.log("txn :" + JSON.stringify(txn));
                                         db.insert(txn);
-                                    }
+                                    });
                                 }
-
-                                //Wallet.transfer(destination, options);
-                                //console.log("it's in db now!");
                                 if (useEncryption == false) {
                                     return res.send(uuid); //must have a return or complains about headers
                                 } else {
@@ -456,26 +356,10 @@ var appRouter = function (app) {
                 }
             }
 
-            //same as "send" but testing whether I can get xmrto-api working
-        } else if (req.body.Type == "sendxmr2api") {
-
-            console.log("sending");
-            m = req.body.Type + req.body.amount.replace(".", "d") + req.body.timestamp + req.body.destination;
-            var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
-            console.log(ver);
-            //check if last request was more than 30 seconds ago.. simple replay avoidance
-            if (ver == true && (Math.abs(Lasttime - times) > 30)) {
-                //do stuff 
-                console.log("sending xmr2btc via api");
-                res.send("not implemented yet");
-            }
-
         } else if (req.body.Type == "sendXMR") {
 
-            console.log("sending plain old XMR");
             m = req.body.Type + req.body.amount.replace(".", "d") + req.body.timestamp + req.body.destination;
             var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
-            console.log(ver);
             //check if last request was more than 30 seconds ago.. simple replay avoidance
             if (ver == true && (Math.abs(Lasttime - times) > 30)) {
                 Lasttime = times;
@@ -486,38 +370,8 @@ var appRouter = function (app) {
                     var options = { pid: req.body.pid };
                     Pid = req.body.pid;
                 }
-                //log it 
-
-                if (dummy == false) {
-
-                    //send it
-                    Wallet.transfer(destinations, options).then(function (txids) {
-                        console.log(txids);
-                        var txn = {
-                            destination: "none",
-                            btcamount: "0",
-                            xmrtouuid: "none",
-                            xmramount: req.body.amount,
-                            xmraddr: req.body.destination,
-                            xmrpid: Pid,
-                            time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                            txid: String(txids['tx_hash'].replace("<", "").replace(">", "")),
-                            _id: String(txids['tx_hash'].replace("<", "").replace(">", ""))
-
-
-                        };
-                        console.log("txn :" + JSON.stringify(txn));
-                        db.insert(txn);
-                        if (useEncryption == false) {
-                            return res.send(String(txids));
-                        } else {
-                            return res.send(dataEncrypted(String(txids)));
-                        }
-
-                    });
-                } else {
-                    console.log("dummy txids");
-
+                Wallet.transfer(destinations, options).then(function (txids) {
+                    console.log(txids);
                     var txn = {
                         destination: "none",
                         btcamount: "0",
@@ -526,18 +380,17 @@ var appRouter = function (app) {
                         xmraddr: req.body.destination,
                         xmrpid: Pid,
                         time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                        txid: "dummytxnid"
-
+                        txid: String(txids['tx_hash'].replace("<", "").replace(">", "")),
+                        _id: String(txids['tx_hash'].replace("<", "").replace(">", ""))
                     };
                     console.log("txn :" + JSON.stringify(txn));
                     db.insert(txn);
                     if (useEncryption == false) {
-                        return res.send("dummy txids");
+                        return res.send(String(txids));
                     } else {
-                        return res.send(dataEncrypted("dummy txids"));
+                        return res.send(dataEncrypted(String(txids)));
                     }
-
-                }
+                });
             } else {
                 return res.send("incorrect signature");
             }
