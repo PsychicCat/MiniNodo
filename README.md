@@ -1,5 +1,9 @@
-# MiniNodo
+# MiniNodo / MiniNero Web
 This node.js server runs on the same machine as your monero installation and provides encrypted and authenticated communication via NACL between the MiniNeroUniversal Windows 10 phone / tablet / PC apps, your Monero installation, and xmr.to. 
+
+Additionally, I've included MiniNero Web which allows for management of MiniNodo, and is a simple standalone wallet gui (This can accomplish basic gui tasks such as send, receive, and view transactions, but is not intended to replace an official GUI). 
+Screenshots: http://imgur.com/a/Hifdb
+![Screenshot](http://i.imgur.com/uf08KTw.png)
 
 #Installation
 0. A pre-requisite is that your monero installation should be running in rpc mode: ./simplewallet --wallet-file ~/wallet.bin --password <wallet_password> --rpc-bind-port 18082)   (it is helpful to use the program "screen" at this point: https://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/)
