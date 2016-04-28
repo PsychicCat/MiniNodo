@@ -100,7 +100,7 @@ var appRouter = function (app) {
     });
 
     //txns
-    //Fix, this is super old and awful
+    //Fix this route, this is super old and awful
     //For a better example, use the MiniNero Web Transactions view 
     //(see public folder)
     app.post("/web/mininero/", function (req, res) {
@@ -240,7 +240,6 @@ var appRouter = function (app) {
 
         }
 
-
         if (req.body.Type == "address") {
             m = req.body.Type + req.body.timestamp;
             var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
@@ -357,7 +356,6 @@ var appRouter = function (app) {
             }
 
         } else if (req.body.Type == "sendXMR") {
-
             m = req.body.Type + req.body.amount.replace(".", "d") + req.body.timestamp + req.body.destination;
             var ver = nacl.sign.detached.verify(naclutil.decodeUTF8(m), FromHex(req.body.signature), FromHex(MiniNeroPk));
             //check if last request was more than 30 seconds ago.. simple replay avoidance
@@ -404,19 +402,143 @@ var appRouter = function (app) {
         //the ::1 is ipv6..
         if (ipOfSource == '127.0.0.1' || ipOfSource == 'localhost' || ipOfSource == '::1') next();
     });
+    
+    var useEncryption = false; //add encryption later..
 
     //all routes which need to be need to accessed from localhost goes here.
     app.get("/api/localtransactions/", function (req, res) {
         console.log("local txn request");
         db.find({}).sort({ time: -1 }).exec(function (err, docs) {
-            console.log("docs:");
+            console.log("here");
             console.log(JSON.stringify(docs));
-
             return res.send(JSON.stringify(docs));
         });
     });
 
-};
+    //refactor into a method and combine with above. 
+    app.get("/api/localaddress/", function (req, res) {
+        console.log("local address request");
+        Wallet.address().then(function (addy) {
+            if (useEncryption == false) {
+                return res.send(String(addy.address));
+            } else {
+                return res.send(dataEncrypted(String(addy.address)));
+            }
+        });
+    });
 
+    //refactor into a method and combine with above..
+    app.get("/api/localbalance/", function (req, res) {
+        console.log("local balance request");
+        Wallet.balance().then(function (balance) {
+            balanceUsual = (balance.balance / 1000000000000);
+            if (useEncryption == false) {
+                return res.send(String(balanceUsual));
+            } else {
+                return res.send(dataEncrypted(balanceUsual));
+            }
+        });
+    });
+
+    //refactor this into a method, and combine with above..
+    app.post("/api/localsendbtc/", function (req, res) {
+        console.log("local send btc request");
+        var uuid = "unknown"
+        dest = req.body.destination;
+        amount = req.body.amount;
+        //make request #1 to xmr.to
+        var headers1 = {
+            'Content-Type': 'application/json'
+        };
+        var dataString1 = '{"btc_dest_address": "' + dest + '",     "btc_amount": ' + String(amount) + '}';
+
+        var options1 = {
+            url: 'https://xmr.to/api/v1/xmr2btc/order_create/',
+            method: 'POST',
+            headers: headers1,
+            body: dataString1
+        };
+
+        request(options1, function (error, response, body) {
+            //get uuid
+            var first = JSON.parse(body);
+            uuid = first.uuid;
+            var dataString2 = '{"uuid": \"' + uuid + '\"}';
+            var options2 = {
+                url: 'https://xmr.to/api/v1/xmr2btc/order_status_query/',
+                method: 'POST',
+                headers: headers1,
+                body: dataString2
+            };
+
+            setTimeout(function () {
+                request2(options2, function (error2, response2, body2) {
+                    var second = JSON.parse(body2);
+                    var xmr_amount = second.xmr_required_amount;
+                    var xmr_addr = second.xmr_receiving_address;
+                    var xmr_pid = second.xmr_required_payment_id;
+
+                    var destinations = { amount: xmr_amount, address: xmr_addr };
+                    var options = { pid: xmr_pid };
+                    if (xmr_pid) {
+                        Wallet.transfer(destinations, options).then(function (txids) {
+                            var txn = {
+                                destination: dest,
+                                btcamount: amount,
+                                xmrtouuid: uuid,
+                                xmramount: xmr_amount,
+                                xmraddr: xmr_addr,
+                                xmrpid: xmr_pid,
+                                time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                                txid: String(txids['tx_hash'].replace("<", "").replace(">", "")),
+                                _id: String(txids['tx_hash'].replace("<", "").replace(">", ""))
+
+                            };
+                            console.log("txn :" + JSON.stringify(txn));
+                            db.insert(txn);
+                        });
+                    }
+                    if (useEncryption == false) {
+                        return res.send(uuid); //must have a return or complains about headers
+                    } else {
+                        return res.send(dataEncrypted(uuid));
+                    }
+                });
+            }, 5000);
+        });
+    });
+
+    //refactor this into a method, and combine with above..
+    app.post("/api/localsendxmr/", function (req, res) {
+        console.log("local send xmr request");
+        var destinations = { amount: req.body.amount, address: req.body.destination };
+        var Pid = "None";
+        if (req.body.pid) {
+            var options = { pid: req.body.pid };
+            Pid = req.body.pid;
+        }
+        Wallet.transfer(destinations, options).then(function (txids) {
+            console.log(txids);
+            var txn = {
+                destination: "none",
+                btcamount: "0",
+                xmrtouuid: "none",
+                xmramount: req.body.amount,
+                xmraddr: req.body.destination,
+                xmrpid: Pid,
+                time: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                txid: String(txids['tx_hash'].replace("<", "").replace(">", "")),
+                _id: String(txids['tx_hash'].replace("<", "").replace(">", ""))
+            };
+            console.log("txn :" + JSON.stringify(txn));
+            db.insert(txn);
+            if (useEncryption == false) {
+                return res.send(String(txids));
+            } else {
+                return res.send(dataEncrypted(String(txids)));
+            }
+        });
+    });
+};
 
 module.exports = appRouter;

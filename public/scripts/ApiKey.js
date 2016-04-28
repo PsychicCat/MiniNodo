@@ -1,5 +1,4 @@
-
-
+document.getElementById("apilink").onclick = genApiKey;
 
 function decimalToHex(d, padding) {
   var hex = Number(d).toString(16);
@@ -10,26 +9,31 @@ function decimalToHex(d, padding) {
   return hex;
 }
 
-var ToHex = function (sk) {
+function ToHex(sk) {
   var i, s = [];
   for (i = 0; i < sk.length; i++) s.push(decimalToHex(sk[i], 2));
   return s.join('');
 }
 
+function genApiKey() {
 
-
-document.getElementById("apilink").onclick = writeApiKey;
-
-
-function writeApiKey() {
-  skpk = nacl.sign.keyPair();
-  sk = ToHex(skpk.secretKey);
-  ic = document.getElementById("innercontent");
-  ic.innerHTML = '';
-  qr = document.getElementById("qrcode");
-  qr.innerHTML = '';
-  new QRCode(qr, sk);
+  var q = document.getElementById("qrcode");
+  q.innerHTML = '';
   
-  ic.innerHTML='<div class="content"><p style="word-break:break-all">'+sk+'</p></div>';
-  return false;
+  var skpk = nacl.sign.keyPair();
+  var sk = ToHex(skpk.secretKey);
+  
+  ic = document.getElementById("innercontent");
+  ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
+  new QRCode(q, sk);
+}
+
+function saveApiKey() {
+  if (confirm('Save generated Api Key?')) {
+    // Save it!
+    alert('saved');
+     } else {
+    alert('not saved');
+    // Do nothing!
+    }
 }

@@ -46,13 +46,14 @@ document.getElementById("txnlink").onclick = writeTxns;
 
 function writeTxns() {
     var theUrl = 'https://localhost:3000/api/localtransactions/';
+
     $.get(
         theUrl,
         function (data) {
             document.getElementById("qrcode").innerHTML = '';
             document.getElementById('innercontent').innerHTML = '';
             ReactDOM.render(
-                <TxnList txns={JSON.parse(data)} />,
+                <TxnList txns={JSON.parse(data) } />,
                 document.getElementById('innercontent')
             );
         }
