@@ -35,10 +35,12 @@ var now = function () {
 //
 //Check for incoming transfers, and add new transfers to wallet..
 //
+//
 function checkTransfers() {
+    console.log("Checking for incoming transactions..");
+    try {
     Wallet.incomingTransfers("all").then(function (t) {
-        //console.log(t.transfers);
-        console.log("Checking for incoming transactions..");
+        console.log('found transfers, comparing with saved db');
         tx = t.transfers
         tx_hashes = []
         tmp = ""
@@ -79,9 +81,10 @@ function checkTransfers() {
             console.log("error in checking transactions!");
         }
         console.log("checked transactions.");
-
     });
-
+    } catch (err) {
+        console.log('that error...');
+    }
 }
 
 

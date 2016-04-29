@@ -32,7 +32,9 @@ var PageContent = React.createClass({
                 <h2 className="content-subhead">More help</h2>
                 <p>
                     The author can be contacted at shen.noether @gmx.com or at /u/NobleSir on reddit.
-                    This software is provided free-of-charge and you use it at your own risk.
+                    This software is provided free-of-charge and you use it at your own risk. 
+                    The source code is available at: <br/> 
+                    <a href="https://github.com/ShenNoether/MiniNodo">https://github.com/ShenNoether/MiniNodo</a>
                 </p>
             </div>
         );

@@ -432,7 +432,10 @@ var appRouter = function (app) {
         cont = cont || (ipOfSource == 'localhost' )
         cont = cont || ( ipOfSource == '::1' )
         cont = cont || (ipOfSource == '::ffff:127.0.0.1')
-        if (cont) next();
+        if (cont) { next();
+        } else {
+            console.log("ignored attempt from "+ipOfSource);
+        }
     });
 
     var useEncryption = false; //add encryption later..

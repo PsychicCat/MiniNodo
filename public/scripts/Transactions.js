@@ -2,13 +2,20 @@
 
 var Txn = React.createClass({
     render: function () {
+        var address;
+        if (this.props.destination == 'none') {
+            address = this.props.xmraddr;
+        } else {
+            address = this.props.destination;
+        }
+    
         return (
             <div className="email-item pure-g">
                 <div className="pure-u-3-4">
                     <h5 className="email-name">{this.props.time}</h5>
-                    <h4 className="email-subject">{this.props.xmramount}</h4>
+                    <h4 className="email-subject">{this.props.xmramount} XMR</h4>
                     <p className="email-desc">
-                        {this.props.destination}
+                        Destination: {address}
                     </p>
                 </div>
             </div>
@@ -16,7 +23,8 @@ var Txn = React.createClass({
     }
 });
 
-//Basically, I want a smooth e-mail
+//Basically, I want a smooth e-mailish Txn List
+//You click on the txn, and it opens more details
 var TxnList = React.createClass({
 
     render: function () {
@@ -27,6 +35,7 @@ var TxnList = React.createClass({
                     time={txn.time}
                     xmramount={txn.xmramount}
                     destination={txn.destination}
+                    xmraddr={txn.xmraddr}
                     >
                     "tx"
                 </Txn>
