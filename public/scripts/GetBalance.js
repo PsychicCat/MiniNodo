@@ -8,10 +8,13 @@ function writeBalance() {
     function (data) {
       data = String(data);
       if (data.length < 32) {
-        document.getElementById('balance').innerHTML = data;
+        document.getElementById('balance').innerHTML = data+' XMR';
       } else {
         alert('no connection to wallet!');
       }
     }
   );
 }
+
+//check balance on launch...
+writeBalance();
