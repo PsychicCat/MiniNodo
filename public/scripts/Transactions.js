@@ -41,7 +41,6 @@ var TxnList = React.createClass({
     }
 });
 
-
 document.getElementById("txnlink").onclick = writeTxns;
 
 function writeTxns() {

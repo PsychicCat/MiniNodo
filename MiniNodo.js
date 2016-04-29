@@ -8,12 +8,12 @@ var path = require('path');
 var nconf = require('nconf');
 var Datastore = require('nedb')
     , db = new Datastore({ filename: 'txndb', autoload: true });
-
+var moneroWallet = require('monero-nodejs');
 
 //https://www.npmjs.com/package/tweetnacl
 //https://tweetnacl.cr.yp.to/
 
-var moneroWallet = require('monero-nodejs');
+
 var Wallet = new moneroWallet();
 
 var approxTime = function (height) {
@@ -114,48 +114,79 @@ if (1 == 0) {
     checkTransfers();
 }
 
-//Update to use a let's encrypt certificate..
-pem.createCertificate({ days: 365, selfSigned: true }, function (err, keys) {
-    var app = express();
-    //MiniNero Web (for now, comment this line out if desired)
-    app.use('/', express.static(path.join(__dirname, 'public')));
-    //
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: true }));
-
-    var routes = require("./routes/routes.js")(app);
-
-    //var server = app.listen(3000,  function () {
-    var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(3000, function () {
-        console.log("Listening on port %s...", server.address().port);
-        //check every 60 seconds for new transfers, which is half of the block-speed
-        var txnChecker = setInterval(checkTransfers, 60 * 1000);
-
-        //replace with qr in web-browser
-        if (!nconf.get("MiniNeroPk")) {
-            skpk = nacl.sign.keyPair();
-            console.log("this is your api secret key (store in the app /password manager but keep secret!)");
-            console.log("save this in the app:");
-            console.log(ToHex(skpk.secretKey));
-            console.log("");
-            MiniNeroPk = ToHex(skpk.publicKey);
-            console.log("MiniNeroPk" + MiniNeroPk);
-            nconf.set('MiniNeroPk:key', MiniNeroPk);
-            nconf.save(function (err) {
-                fs.readFile('config.json', function (err, data) {
-                    console.dir(JSON.parse(data.toString()))
-                });
+var getPk = function () {
+    //replace with qr in web-browser
+    if (!nconf.get("MiniNeroPk")) {
+        skpk = nacl.sign.keyPair();
+        console.log("this is your api secret key (store in the app /password manager but keep secret!)");
+        console.log("save this in the app:");
+        console.log(ToHex(skpk.secretKey));
+        console.log("");
+        MiniNeroPk = ToHex(skpk.publicKey);
+        console.log("MiniNeroPk" + MiniNeroPk);
+        nconf.set('MiniNeroPk:key', MiniNeroPk);
+        nconf.save(function (err) {
+            fs.readFile('config.json', function (err, data) {
+                console.dir(JSON.parse(data.toString()))
             });
-        } else {
-            MiniNeroPk = nconf.get("MiniNeroPk:key");
-            console.log("MiniNeroPK: " + MiniNeroPk);
-            console.log("MiniNeroPk / api_key already set, if you need to reset it, delete config.json and restart app.js");
-        }
-        if (!nconf.get("lastNonce")) {
-            lastNonce = Math.floor((new Date).getTime() / 1000);
-        } else {
-            lastNonce = nconf.get("lastNonce:nonce");
-        }
-        Lasttime = 0;
+        });
+    } else {
+        MiniNeroPk = nconf.get("MiniNeroPk:key");
+        console.log("MiniNeroPK: " + MiniNeroPk);
+        console.log("MiniNeroPk / api_key already set, if you need to reset it, delete config.json and restart app.js");
+    }
+    return MiniNeroPk;
+}
+
+pem.createPrivateKey(function (error, data) {
+    var key = (data && data.key || '').toString();
+
+    pem.createCertificate({ clientKey: key, days: 365, selfSigned: true }, function (err, keysnew) {
+
+        pem.readPkcs12('cert.p12', { p12Password: 'cat' }, function (error, keys) {
+            if (error != null) {
+                console.log("created new ssl cert.p12\n");
+                console.log("keys:", Object.keys(keysnew));
+                console.log("servicekey", keysnew.serviceKey);
+                keys = keysnew;
+
+                pem.createPkcs12(keysnew.serviceKey, keysnew.certificate, 'cat', { cipher: 'aes256' }, function (err, pkcs12) {
+                    fs.writeFile('cert.p12', pkcs12['pkcs12'], 'binary');
+                });
+            } else {
+                console.log("loaded ssl cert.p12");
+                keys.serviceKey = keys.key;
+                keys.certificate = keys.cert;
+            }
+
+            var app = express();
+            //MiniNero Web (for now, comment this line out if desired)
+            app.use('/', express.static(path.join(__dirname, 'public')));
+            //
+
+            app.use(bodyParser.json());
+            app.use(bodyParser.urlencoded({ extended: true }));
+
+            var routes = require("./routes/routes.js")(app);
+
+            //If you hate https:
+            //var server = app.listen(3000,  function () {
+
+            //else
+            var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(3000, function () {
+                console.log("Listening on port %s...", server.address().port);
+                //check every 100 seconds for new transfers, which is half of the block-speed
+                var txnChecker = setInterval(checkTransfers, 100 * 1000);
+
+                MiniNeroPk = getPk();
+
+                if (!nconf.get("lastNonce")) {
+                    lastNonce = Math.floor((new Date).getTime() / 1000);
+                } else {
+                    lastNonce = nconf.get("lastNonce:nonce");
+                }
+                Lasttime = 0;
+            });
+        });
     });
 });

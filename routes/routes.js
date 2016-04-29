@@ -10,7 +10,9 @@ var Datastore = require('nedb')
 var moneroWallet = require('monero-nodejs');
 var Wallet = new moneroWallet();
 var nconf = require('nconf');
+var fs = require('fs');
 nconf.argv().env().file({ file: 'config.json' });
+var ip = require("ip");
 
 //for whatever reason, couldn't get these to query order as desired..
 var useEncryption = false; //this is set in the request for now
@@ -72,6 +74,16 @@ var dataDecrypted = function (body) {
 
 var now = function () {
     return String(Math.floor((new Date).getTime() / 1000));
+}
+
+var setPk = function (pk) {
+    //replace with qr in web-browser
+    nconf.set('MiniNeroPk:key', pk);
+    nconf.save(function (err) {
+        fs.readFile('config.json', function (err, data) {
+            console.dir(JSON.parse(data.toString()))
+        });
+    });
 }
 
 //Encrypt json
@@ -237,7 +249,6 @@ var appRouter = function (app) {
         } else if (Math.abs(times - timestampi) >= 30) {
             //verify timestamp
             return res.send("timestamp too old..");
-
         }
 
         if (req.body.Type == "address") {
@@ -402,7 +413,7 @@ var appRouter = function (app) {
         //the ::1 is ipv6..
         if (ipOfSource == '127.0.0.1' || ipOfSource == 'localhost' || ipOfSource == '::1') next();
     });
-    
+
     var useEncryption = false; //add encryption later..
 
     //all routes which need to be need to accessed from localhost goes here.
@@ -427,6 +438,18 @@ var appRouter = function (app) {
         });
     });
 
+    //refactor into a method and combine with above. 
+    app.get("/api/localip/", function (req, res) {
+        console.log("local ip address request");
+        Wallet.address().then(function (addy) {
+            if (useEncryption == false) {
+                return res.send(String(ip.address()));
+            } else {
+                return res.send(dataEncrypted(String(ip.address())));
+            }
+        });
+    });
+
     //refactor into a method and combine with above..
     app.get("/api/localbalance/", function (req, res) {
         console.log("local balance request");
@@ -438,6 +461,15 @@ var appRouter = function (app) {
                 return res.send(dataEncrypted(balanceUsual));
             }
         });
+    });
+
+    //set api key
+    app.post("/api/localsetapikey/", function (req, res) {
+        console.log("local set api key request");
+        apipk = req.body.apikey;
+        console.log("apikey", apipk);
+        setPk(apipk);
+        return res.send("Success!");
     });
 
     //refactor this into a method, and combine with above..

@@ -1,6 +1,21 @@
 var Sender = React.createClass({
 
+    send: function () {
+        $.ajax({
+            url :'https://localhost:3000/api/localbalance/',
+            dataType: 'json',
+            type: 'POST',
+            data: {
+            success: function (data) {
+            }.bind(this),
+            error: function (xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
+
     render: function () {
+
 
         return (
             <div className="content">
@@ -16,9 +31,8 @@ var Sender = React.createClass({
                         <input type="text" className="pure-input-1" placeholder="Save Name"/>
                         <textarea className="pure-input-1" placeholder="Transaction Memo"></textarea>
                     </fieldset>
-
-                    <button type="submit" className="pure-button pure-input-1 pure-button-primary">Save Address</button>
-                    <button type="submit" className="pure-button pure-input-1 pure-button-primary">Send</button>
+                    <button  className="pure-button pure-input-1 pure-button-primary">Save Address</button>
+                    <button onclick={this.send} className="pure-button pure-input-1 pure-button-primary">Send</button>
                 </form>
             </div>
         );
@@ -35,10 +49,6 @@ function writeSend() {
         document.getElementById('innercontent')
     );
 }
-
-
-
-
 
 
 

@@ -15,25 +15,52 @@ function ToHex(sk) {
   return s.join('');
 }
 
+var pk = '';
+
 function genApiKey() {
 
   var q = document.getElementById("qrcode");
   q.innerHTML = '';
-  
+
   var skpk = nacl.sign.keyPair();
   var sk = ToHex(skpk.secretKey);
-  
-  ic = document.getElementById("innercontent");
-  ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
-  new QRCode(q, sk);
+  pk = ToHex(skpk.publicKey);
+
+  var theUrl = 'https://localhost:3000/api/localip/';
+  $.get(
+    theUrl,
+    function (data) {
+      data = String(data);
+      if (data.length < 100) {
+        ic = document.getElementById("innercontent");
+        var skqr = "apikey:" + sk + "?" + data;
+        ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
+        new QRCode(q, skqr);
+      } else {
+        alert('no connection to wallet!');
+      }
+    }
+  );
 }
 
 function saveApiKey() {
   if (confirm('Save generated Api Key?')) {
     // Save it!
-    alert('saved');
-     } else {
+    var theUrl2 = 'https://localhost:3000/api/localsetapikey/';
+    $.post(
+      theUrl2,
+      { apikey: pk},
+      function (data) {
+        data = String(data);
+        if (data.length < 100) {
+          alert('saved');
+        } else {
+          alert('no connection to wallet!');
+        }
+      }
+    );
+  } else {
     alert('not saved');
     // Do nothing!
-    }
+  }
 }

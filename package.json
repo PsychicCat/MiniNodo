@@ -21,7 +21,9 @@
     "xmrto-api" : "*",
     "nconf" : "*",
     "fs" : "*",
-    "pem" : "1.8.1",
-    "https" : "*"
+    "pem" : "*",
+    "os-tmpdir":"^1.0.1",
+    "https" : "*",
+    "ip" : "*"
   }
 }
