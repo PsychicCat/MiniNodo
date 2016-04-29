@@ -12,6 +12,7 @@ var moneroWallet = require('monero-nodejs');
 
 //https://www.npmjs.com/package/tweetnacl
 //https://tweetnacl.cr.yp.to/
+var portset = 3000
 
 
 var Wallet = new moneroWallet();
@@ -170,15 +171,17 @@ pem.createPrivateKey(function (error, data) {
             var routes = require("./routes/routes.js")(app);
 
             //If you hate https:
-            //var server = app.listen(3000,  function () {
+            //var server = app.listen(port,  function () {
 
             //else
-            var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(3000, function () {
+            port = portset;
+            var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(port, function () {
                 console.log("Listening on port %s...", server.address().port);
                 //check every 100 seconds for new transfers, which is half of the block-speed
                 var txnChecker = setInterval(checkTransfers, 100 * 1000);
 
                 MiniNeroPk = getPk();
+                port = portset;
 
                 if (!nconf.get("lastNonce")) {
                     lastNonce = Math.floor((new Date).getTime() / 1000);

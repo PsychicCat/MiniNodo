@@ -411,7 +411,11 @@ var appRouter = function (app) {
         var ipOfSource = req.connection.remoteAddress;
         console.log(" request ip ", ipOfSource);
         //the ::1 is ipv6..
-        if (ipOfSource == '127.0.0.1' || ipOfSource == 'localhost' || ipOfSource == '::1') next();
+        var cont = (ipOfSource == '127.0.0.1');
+        cont = cont || (ipOfSource == 'localhost' )
+        cont = cont || ( ipOfSource == '::1' )
+        cont = cont || (ipOfSource == '::ffff:127.0.0.1')
+        if (cont) next();
     });
 
     var useEncryption = false; //add encryption later..
@@ -441,13 +445,13 @@ var appRouter = function (app) {
     //refactor into a method and combine with above. 
     app.get("/api/localip/", function (req, res) {
         console.log("local ip address request");
-        Wallet.address().then(function (addy) {
-            if (useEncryption == false) {
-                return res.send(String(ip.address()));
-            } else {
-                return res.send(dataEncrypted(String(ip.address())));
-            }
-        });
+        addr = String(ip.address()) + ':' + String(port);
+        console.log(addr);
+        if (useEncryption == false) {
+            return res.send(addr);
+        } else {
+            return res.send(dataEncrypted(String(addr)));
+        }
     });
 
     //refactor into a method and combine with above..
