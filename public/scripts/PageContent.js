@@ -24,7 +24,9 @@ var PageContent = React.createClass({
                 
                 <h2 className="content-subhead">SSL Certificate</h2>
                 <p>
-                If you find yourself frequently using this, you can add the generated cert.p12 to your web-browser key store (Change the p12 password if desired). 
+                If you find yourself frequently using this, you can add the generated cert.p12 to your web-browser key store
+                 (Change the p12 password if desired). To create a new certificate, simply delete cert.p12, the app will
+                 generate a new one for you automatically.
                 </p>
 
                 <h2 className="content-subhead">More help</h2>
