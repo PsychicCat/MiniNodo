@@ -1,5 +1,5 @@
 var https = require('https');
-var pem = require('pem');
+var pem = require('./pem.js');
 var express = require("express");
 var bodyParser = require("body-parser");
 var nacl = require("tweetnacl");
