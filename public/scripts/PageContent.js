@@ -7,11 +7,12 @@ var PageContent = React.createClass({
                 <h2 className="content-subhead">Welcome! </h2>
                 <p>
                     MiniNero Web provides simple management for your Monero Mobile Wallet.
-                    It is recommended not to run this web-app over the internet (at some point, I'll add password support and this will work remotely), and only to use
-                    the actual apps (MiniNero Universal/ MiniNero Droid / MiniNero iOS) when on the go.
-                    However, this web-app may be useful for connecting to your MiniNero Node,
-                    setting up your api-key, sending transactions from your home computer, and more.
-                    Your address book can also be synced from here to your mobile apps, if desired.
+                    Right now, this is set-up to only allow actual access via localhost.
+                    In the future, I will replace that with a password option, so you will be able 
+                    to manage your node on the go, via the web-interface.
+                    </p><p>
+                    Additionally, this web-app will help set-up your mobile wallet.
+                    All you have to do is scan the qr code in the Api-key tab.
                 </p>
 
                 <h2 className="content-subhead">Getting Started</h2>
