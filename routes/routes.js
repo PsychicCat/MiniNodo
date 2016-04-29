@@ -97,9 +97,6 @@ var dataEncrypted = function (message) {
     var encrypted = nacl.secretbox(naclutil.decodeUTF8(message), FromHex(nonce), FromHex(MiniNeroPk));
     console.log("encrypted thing is" + ToHex(encrypted));
     var jsonReturn = { "cipher": ToHex(encrypted), "nonce": nonce };
-    //var encrypted = nacl.secretbox.open(FromHex(body.cipher), keypair.publicKey, FromHex(MiniNeroPk));
-
-    //console.log("deciph ", a);
     return createResponse(jsonReturn);
 }
 
@@ -406,6 +403,26 @@ var appRouter = function (app) {
         }
     });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //MiniNero Web api calls (refactor and combine with above later, once you add a session key..)
     //the remaining api calls should be accessible only to localhost
     app.use(function (req, res, next) {
         var ipOfSource = req.connection.remoteAddress;
@@ -424,8 +441,7 @@ var appRouter = function (app) {
     app.get("/api/localtransactions/", function (req, res) {
         console.log("local txn request");
         db.find({}).sort({ time: -1 }).exec(function (err, docs) {
-            console.log("here");
-            console.log(JSON.stringify(docs));
+            //console.log(JSON.stringify(docs));
             return res.send(JSON.stringify(docs));
         });
     });
@@ -445,7 +461,6 @@ var appRouter = function (app) {
     //refactor into a method and combine with above. 
     app.get("/api/localip/", function (req, res) {
         console.log("local ip address request");
-        addr = String(ip.address()) + ':' + String(port);
         console.log(addr);
         if (useEncryption == false) {
             return res.send(addr);

@@ -9,11 +9,15 @@ var nconf = require('nconf');
 var Datastore = require('nedb')
     , db = new Datastore({ filename: 'txndb', autoload: true });
 var moneroWallet = require('monero-nodejs');
+var open = require('open');
+var ip = require("ip");
+
 
 //https://www.npmjs.com/package/tweetnacl
 //https://tweetnacl.cr.yp.to/
-var portset = 3000
+var portset = 3000;
 
+var addrset = 'https://'+String(ip.address()) + ':' + String(portset);
 
 var Wallet = new moneroWallet();
 
@@ -175,13 +179,24 @@ pem.createPrivateKey(function (error, data) {
 
             //else
             port = portset;
+            addr = addrset;
             var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(port, function () {
                 console.log("Listening on port %s...", server.address().port);
                 //check every 100 seconds for new transfers, which is half of the block-speed
                 var txnChecker = setInterval(checkTransfers, 100 * 1000);
+                
+
 
                 MiniNeroPk = getPk();
                 port = portset;
+                addr = addrset;
+                
+                //automatically open web app on launch
+                localaddr = 'https://localhost:'+port;
+                open(localaddr, function (err) {
+                if (err) throw err;
+                    console.log('Possible error opening browser');
+                });
 
                 if (!nconf.get("lastNonce")) {
                     lastNonce = Math.floor((new Date).getTime() / 1000);
