@@ -3,7 +3,7 @@ This node.js server runs on the same machine as your monero installation and pro
 
 Additionally, I've included MiniNero Web which allows for management of MiniNodo, and is a simple standalone wallet gui (This can accomplish basic gui tasks such as send, receive, and view transactions, but is not intended to replace an official GUI). 
 Screenshots: http://imgur.com/a/Hifdb
-![Screenshot](http://i.imgur.com/uf08KTw.png)
+![Screenshot](http://i.imgur.com/MmYzTlM.png)
 
 #Installation
 0. A pre-requisite is that your monero installation should be running in rpc mode: ./simplewallet --wallet-file ~/wallet.bin --password <wallet_password> --rpc-bind-port 18082)   (it is helpful to use the program "screen" at this point: https://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/). You can likely add daemon mode too, if you don't want to actually download the blockchain.
@@ -14,7 +14,8 @@ Screenshots: http://imgur.com/a/Hifdb
 
 3. In the top MiniNodo directory, use "npm install" to install all the dependency packages listed in package.json
 
-4. To start your server, you can use the command: node MiniNodo.js 0.0.0.0  
+4. To start your server, you can use the command: "node MiniNodo.js 0.0.0.0"  Replace 0.0.0.0 with another ip if you wish to bind it differently.  
+
 
 #Notes
 1. My next aim is to improve user-friendliness of this code / repo. 
