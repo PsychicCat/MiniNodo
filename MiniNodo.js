@@ -19,15 +19,9 @@ var portset = 3000;
 
 var addrset = 'https://'+String(ip.address()) + ':' + String(portset);
 
+//Also change this on routes (I will fix later so you can set it only here)
 var Wallet = new moneroWallet('localhost', 18082);
 
-var approxTime = function (height) {
-    if (height <= 1009827) {
-        return 1458748658 - 2 * 60 * (1009827 - height)
-    } else {
-        return (height - 1009827) * 2 * 60 + 1458748658
-    }
-}
 var now = function () {
     return String(Math.floor((new Date).getTime() / 1000));
 }

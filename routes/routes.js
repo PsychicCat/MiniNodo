@@ -8,7 +8,7 @@ var request2 = require('request');
 var Datastore = require('nedb')
     , db = new Datastore({ filename: 'txndb', autoload: true });
 var moneroWallet = require('monero-nodejs');
-var Wallet = new moneroWallet();
+var Wallet = new moneroWallet('localhost', 18082);
 var nconf = require('nconf');
 var fs = require('fs');
 nconf.argv().env().file({ file: 'config.json' });

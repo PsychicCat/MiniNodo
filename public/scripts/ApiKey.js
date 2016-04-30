@@ -27,20 +27,6 @@ function genApiKey() {
   pk = ToHex(skpk.publicKey);
 
   var theUrl = 'https://localhost:3000/api/localip/';
-  $.get(
-    theUrl,
-    function (data) {
-      data = String(data);
-      if (data.length < 100) {
-        ic = document.getElementById("innercontent");
-        var skqr = "apikey:" + sk + "?" + data;
-        ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
-        new QRCode(q, skqr);
-      } else {
-        alert('no connection to wallet!');
-      }
-    }
-  );
 
   $.ajax({
     url: theUrl,
@@ -48,6 +34,8 @@ function genApiKey() {
     success: function (data) {
       data = String(data);
       if (data.length < 100) {
+        var q = document.getElementById("qrcode");
+        q.innerHTML = '';
         ic = document.getElementById("innercontent");
         var skqr = "apikey:" + sk + "?" + data;
         ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
@@ -61,6 +49,8 @@ function genApiKey() {
       alert('error contacting simplewallet, displaying sample data!'); //or whatever
       data = String('https://localhost:3000');
       if (data.length < 100) {
+        var q = document.getElementById("qrcode");
+        q.innerHTML = '';
         ic = document.getElementById("innercontent");
         var skqr = "apikey:" + sk + "?" + data;
         ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
