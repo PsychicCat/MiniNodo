@@ -1,6 +1,4 @@
 /*
-
-/*
  * -- EMAIL STYLES --
  * Styles relevant to the email messages, labels, counts, and more.
  */
@@ -75,24 +73,29 @@
 .email-content-body,
 .email-content-footer {
     padding: 1em 2em;
+    word-break: break-all;
 }
 
 .email-content-header {
     border-bottom: 1px solid #ddd;
+    word-break: break-all;
 }
 
 .email-content-title {
     margin: 0.5em 0 0;
+    word-break: break-all;
 }
 
 .email-content-subtitle {
     font-size: 1em;
     margin: 0;
     font-weight: normal;
+    word-break: break-all;
 }
 
 .email-content-subtitle span {
     color: #999;
+    word-break: break-all;
 }
 
 .email-content-controls {
@@ -107,4 +110,64 @@
 .email-avatar {
     width: 40px;
     height: 40px;
+}
+
+
+/*
+ * -- TABLET (AND UP) MEDIA QUERIES --
+ * On tablets and other medium-sized devices, we want to customize some
+ * of the mobile styles.
+ */
+
+@media (min-width: 40em) {
+    /* Move the layout over so we can fit the nav + list in on the left */
+    #layout {
+        padding-left: 500px;
+        /* "left col (nav + list)" width */
+        position: relative;
+    }
+    /* These are position:fixed; elements that will be in the left 500px of the screen */
+    #list {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        overflow: auto;
+    }
+    #list {
+        margin-left: -200px;
+        width: 100%;
+        height: 33%;
+        border-bottom: 1px solid #ddd;
+    }
+    #main {
+        top: 33%;
+        right: 0;
+        bottom: 0;
+        left: 250px;
+        overflow: auto;
+        width: auto;
+        /* so that it's not 100% */
+    }
+}
+
+
+/*
+ * -- DESKTOP (AND UP) MEDIA QUERIES --
+ * On desktops and other large-sized devices, we want to customize some
+ * of the mobile styles.
+ */
+
+@media (min-width: 40em) {
+    /* This will take up the entire height, and be a little thinner */
+    #list {
+        height: 100%;
+        width:500px;
+        border-right: 1px solid #ddd;
+    }
+    /* This will now take up it's own column, so don't need position: fixed; */
+    #main {
+        padding: 0;
+        width: auto;
+        margin-left:300px;
+    }
 }

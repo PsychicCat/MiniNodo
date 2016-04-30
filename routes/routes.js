@@ -404,6 +404,17 @@ var appRouter = function (app) {
     });
 
 
+    useEncryption = false;
+    //refactor into a method and combine with above. 
+    app.get("/api/localip/", function (req, res) {
+        console.log("local ip address request");
+        console.log(addr);
+        if (useEncryption == false) {
+            return res.send(addr);
+        } else {
+            return res.send(dataEncrypted(String(addr)));
+        }
+    });
 
 
 
@@ -429,16 +440,16 @@ var appRouter = function (app) {
         console.log(" request ip ", ipOfSource);
         //the ::1 is ipv6..
         var cont = (ipOfSource == '127.0.0.1');
-        cont = cont || (ipOfSource == 'localhost' )
-        cont = cont || ( ipOfSource == '::1' )
+        cont = cont || (ipOfSource == 'localhost')
+        cont = cont || (ipOfSource == '::1')
         cont = cont || (ipOfSource == '::ffff:127.0.0.1')
-        if (cont) { next();
+        if (cont) {
+            next();
         } else {
-            console.log("ignored attempt from "+ipOfSource);
+            console.log("ignored attempt from " + ipOfSource);
         }
     });
 
-    var useEncryption = false; //add encryption later..
 
     //all routes which need to be need to accessed from localhost goes here.
     app.get("/api/localtransactions/", function (req, res) {
@@ -461,16 +472,7 @@ var appRouter = function (app) {
         });
     });
 
-    //refactor into a method and combine with above. 
-    app.get("/api/localip/", function (req, res) {
-        console.log("local ip address request");
-        console.log(addr);
-        if (useEncryption == false) {
-            return res.send(addr);
-        } else {
-            return res.send(dataEncrypted(String(addr)));
-        }
-    });
+
 
     //refactor into a method and combine with above..
     app.get("/api/localbalance/", function (req, res) {
