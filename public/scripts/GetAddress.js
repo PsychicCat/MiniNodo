@@ -20,18 +20,32 @@ document.getElementById("addresslink").onclick = writeAddress;
 //put it in the qrcode to be centered
 function writeAddress() {
   var theUrl = 'https://localhost:3000/api/localaddress/';
-  $.get(
-    theUrl,
-    function (data) {
+  $.ajax({
+    url: theUrl,
+    type: 'GET',
+    success: function (data) {
       addy = String(data);
+      if (addy == '') {
+        addy = String('Failed to contact simplewallet');
+      }
       ic = document.getElementById("innercontent");
       ic.innerHTML = '';
       qr = document.getElementById("qrcode");
       qr.innerHTML = '';
-      new QRCode(qr, "monero:"+addy);
+      new QRCode(qr, "monero:" + addy);
 
       ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + addy + '</p></div>';
-      return false;
-    }
-  );
+    },
+    error: function (data) {
+      addy = String('Failed to contact simplewallet');
+      ic = document.getElementById("innercontent");
+      ic.innerHTML = '';
+      qr = document.getElementById("qrcode");
+      qr.innerHTML = '';
+      new QRCode(qr, "monero:" + addy);
+
+      ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + addy + '</p></div>';
+    },
+     timeout: 1000 // sets timeout to 3 seconds
+  });
 }

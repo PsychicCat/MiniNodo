@@ -19,7 +19,7 @@ var portset = 3000;
 
 var addrset = 'https://'+String(ip.address()) + ':' + String(portset);
 
-var Wallet = new moneroWallet();
+var Wallet = new moneroWallet('localhost', 18082);
 
 var approxTime = function (height) {
     if (height <= 1009827) {
