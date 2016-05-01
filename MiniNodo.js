@@ -190,10 +190,14 @@ pem.createPrivateKey(function (error, data) {
                 
                 //automatically open web app on launch
                 localaddr = 'https://localhost:'+port;
+                //this might not work for purely remote users
+                console.log("MiniNero web running on ", localaddr);
+                /*
                 open(localaddr, function (err) {
                 if (err) throw err;
                     console.log('Possible error opening browser');
                 });
+                */
 
                 if (!nconf.get("lastNonce")) {
                     lastNonce = Math.floor((new Date).getTime() / 1000);
