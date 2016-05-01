@@ -445,9 +445,12 @@ var appRouter = function (app) {
         cont = cont || (ipOfSource == '::1')
         cont = cont || (ipOfSource == '::ffff:127.0.0.1')
         if (cont) {
+            console.log("allowed attempt from " + ipOfSource);
             next();
         } else {
             console.log("ignored attempt from " + ipOfSource);
+            res.status(400);
+            res.send('None shall pass');
         }
     });
 

@@ -16,6 +16,7 @@ var ip = require("ip");
 //https://www.npmjs.com/package/tweetnacl
 //https://tweetnacl.cr.yp.to/
 var portset = 3000;
+var portset = process.env.PORT || 8080;
 
 var addrset = 'https://'+String(ip.address()) + ':' + String(portset);
 
