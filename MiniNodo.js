@@ -8,7 +8,7 @@ var path = require('path');
 var nconf = require('nconf');
 var Datastore = require('nedb')
     , db = new Datastore({ filename: 'txndb', autoload: true });
-var moneroWallet = require('monero-nodejs');
+var moneroWallet = require('./monero-nodejs.js');
 var open = require('open');
 var ip = require("ip");
 
