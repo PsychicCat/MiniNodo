@@ -5,6 +5,7 @@
   "description": "node version of MiniNero's SimpleServer.py",
   "main": "index.js",
   "scripts": {
+    "start":"node MiniNodo.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "ShenNoether",
