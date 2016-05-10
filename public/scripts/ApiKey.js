@@ -44,7 +44,8 @@ function saveApiKey() {
     var theUrl = ip + route;
     var token = sessionStorage.getItem('_sk');
     var time = sessionStorage.getItem('time');
-    var timenow = mnw.now();
+    var offset = sessionStorage.getItem('offset');
+    var timenow = String(mnw.Now()+offset);
     var salt2 = sessionStorage.getItem('salt2');
     var signature = mnw.Sign('apikey' + timenow + pk, token);
     if (token != null & token != '') {

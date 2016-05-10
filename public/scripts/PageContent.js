@@ -90,9 +90,11 @@ function passToSk(pass) {
             type: 'GET',
             success: function (data) {
                 spinner.stop();
-                var salt1 = data;
+                var salt1 = data.split(',')[0];
+                var cb_time = data.split(',')[1];
+                sessionStorage.setItem('offset', String(parseInt(cb_time,10) - mnw.Now()));
                 var salt2 = mnw.genSalt();
-                var time = mnw.now();
+                var time = String(cb_time);
                 sessionStorage.setItem('salt2', salt2);
                 sessionStorage.setItem('time', time);
                 var token = mnw.genTokenClient(pass, salt1, salt2, time);
