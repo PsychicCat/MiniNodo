@@ -21,7 +21,7 @@ function writeAddress() {
   var route = '/api/mininero';
   var theUrl = ip + route;
   var token = sessionStorage.getItem('_sk');
-  var time = sessionStorage.getItem('time');
+  var issuetime = sessionStorage.getItem('issuetime');
   var timenow = mnw.now();
   var offset = parseInt(sessionStorage.getItem('offset'), 10);
   var timenow = String(mnw.Now()+offset);
@@ -32,7 +32,7 @@ function writeAddress() {
     $.ajax({
       type: "POST",
       url: theUrl,
-      data: { "Type": "address", "timestamp": timenow, "salt2": salt2, "issuetime": time, "signature": signature },
+      data: { "Type": "address", "timestamp": timenow, "salt2": salt2, "issuetime": issuetime, "signature": signature },
       success: function (data) {
         spinner.stop();
         addy = String(data);

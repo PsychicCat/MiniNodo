@@ -92,12 +92,14 @@ function passToSk(pass) {
                 spinner.stop();
                 var salt1 = data.split(',')[0];
                 var cb_time = data.split(',')[1];
-                sessionStorage.setItem('offset', String(parseInt(cb_time,10) - mnw.Now()));
+                var offset = parseInt(cb_time, 10) - mnw.Now();
+                sessionStorage.setItem('offset', String(offset));
+                console.log('offset', offset);
                 var salt2 = mnw.genSalt();
-                var time = String(cb_time);
+                var issuetime = String(cb_time);
                 sessionStorage.setItem('salt2', salt2);
-                sessionStorage.setItem('time', time);
-                var token = mnw.genTokenClient(pass, salt1, salt2, time);
+                sessionStorage.setItem('issuetime', issuetime);
+                var token = mnw.genTokenClient(pass, salt1, salt2, issuetime);
                 sessionStorage.setItem('_sk', token);
                 document.body.style.background = "white";
                 writeHome();

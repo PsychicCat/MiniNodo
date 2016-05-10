@@ -24,13 +24,13 @@ var Sender = React.createClass({
         var route = '/api/mininero';
         var theUrl = ip + route;
         var token = sessionStorage.getItem('_sk');
-        var time = sessionStorage.getItem('time');
+        var issuetime = sessionStorage.getItem('issuetime');
         var timenow = mnw.now();
         var offset = parseInt(sessionStorage.getItem('offset'), 10);
         var timenow = String(mnw.Now() + offset);
         var salt2 = sessionStorage.getItem('salt2');
         var signature = mnw.Sign(Type + String(this.state.amount).replace(".", "d") + timenow + this.state.destination);
-        var theData = { "Type": Type, "timestamp": timenow, "salt2": salt2, "issuetime": time, "signature": signature, destination: this.state.destination, amount: this.state.amount };
+        var theData = { "Type": Type, "timestamp": timenow, "salt2": salt2, "issuetime": issuetime, "signature": signature, destination: this.state.destination, amount: this.state.amount };
         if (this.state.pid != '') {
             theData.push({ pid: this.state.pid });
         }

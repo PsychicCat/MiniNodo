@@ -102,8 +102,9 @@ var appRouter = function (app) {
 
     //get salt 1...
     app.get('/api/salt1/', function (req, res) {
+        console.log('salt1 request');
         var salt1 = nconf.get("salt1:key");
-        res.send(salt1+','+mnw.now());
+        return res.send(salt1+','+mnw.now());
     });
 
     //basic timestamping
