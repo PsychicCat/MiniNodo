@@ -26,6 +26,7 @@
     "https" : "*",
     "ip" : "*",
     "open" : "*",
-    "which" : "*"
+    "which" : "*",
+    "prompt-sync" : "4.0.4"
   }
 }

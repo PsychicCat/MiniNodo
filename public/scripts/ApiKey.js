@@ -15,71 +15,54 @@ function ToHex(sk) {
   return s.join('');
 }
 
-var pk = '';
+var pk = '';//this will be the new MiniNeroPk..
 
 function genApiKey() {
-
-  var q = document.getElementById("qrcode");
-  q.innerHTML = '';
-
-  var skpk = nacl.sign.keyPair();
-  var sk = ToHex(skpk.secretKey);
-  pk = ToHex(skpk.publicKey);
-
-  var theUrl = 'https://localhost:3000/api/localip/';
-
-  $.ajax({
-    url: theUrl,
-    type: 'POST',
-    success: function (data) {
-      data = String(data);
-      if (data.length < 100) {
-        var q = document.getElementById("qrcode");
-        q.innerHTML = '';
-        ic = document.getElementById("innercontent");
-        var skqr = "apikey:" + sk + "?" + data;
-        ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
-        new QRCode(q, skqr);
-      } else {
-        alert('no connection to wallet!');
-      }
-    },
-    error: function (data) {
-
-      alert('error contacting simplewallet, displaying sample data!'); //or whatever
-      data = String('https://localhost:3000');
-      if (data.length < 100) {
-        var q = document.getElementById("qrcode");
-        q.innerHTML = '';
-        ic = document.getElementById("innercontent");
-        var skqr = "apikey:" + sk + "?" + data;
-        ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
-        new QRCode(q, skqr);
-      } else {
-        alert('no connection to wallet!');
-      }
-    }
-  });
+  var token = sessionStorage.getItem('_sk');
+  if (token != null & token != '') {
+    //fix for more even css
+    var q = document.getElementById("qrcode");
+    q.innerHTML = '';
+    var skpk = nacl.sign.keyPair();
+    var sk = ToHex(skpk.secretKey);
+    pk = ToHex(skpk.publicKey);
+    var ip = 'https://' + window.location.host;
+    var q = document.getElementById("qrcode");
+    q.innerHTML = '';
+    ic = document.getElementById("innercontent");
+    var skqr = "apikey:" + sk + "?" + ip;
+    ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
+    new QRCode(q, skqr);
+  }
 }
 
 function saveApiKey() {
   if (confirm('Save generated Api Key?')) {
     // Save it!
-    var theUrl2 = 'https://localhost:3000/api/localsetapikey/';
-    $.post(
-      theUrl2,
-      { apikey: pk },
-      function (data) {
-        data = String(data);
-        if (data.length < 100) {
-          alert('saved');
-        } else {
-          alert('no connection to wallet!');
-        }
-      }
-    );
-  } else {
-    alert('not saved');
-    // Do nothing!
+    var ip = 'https://' + window.location.host;
+    var route = '/api/mininero';
+    var theUrl = ip + route;
+    var token = sessionStorage.getItem('_sk');
+    var time = sessionStorage.getItem('time');
+    var timenow = mnw.now();
+    var salt2 = sessionStorage.getItem('salt2');
+    var signature = mnw.Sign('apikey' + timenow + pk, token);
+    if (token != null & token != '') {
+      spinner.spin(spint);
+      $.ajax({
+        type: "POST",
+        url: theUrl,
+        data: { "Type": "apikey", "timestamp": timenow, "salt2": salt2, "issuetime": time, "signature": signature, apikey: pk },
+        success: function (data) {
+          spinner.stop();
+          alert(data);
+        },
+        error: function (data) {
+          spinner.stop();
+          alert('error saving apikey!');
+        },
+        timeout: 1000 // sets timeout to 3 seconds
+      });
+    }
   }
 }

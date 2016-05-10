@@ -2,72 +2,70 @@
 
 var Sender = React.createClass({
 
-    getInitialState: function() {
+    getInitialState: function () {
         return { amount: '', destination: '', pid: '' };
     },
-    
-    goToTxns: function() {
+
+    goToTxns: function () {
         window.alert('Check Transactions');
-        $.getScript("scripts/Transactions.js", function(){
-              writeTxns();
+        $.getScript("scripts/Transactions.js", function () {
+            writeTxns();
         });
     },
 
-    send: function() {
-        console.log('attempting');
-        console.log(this.state.destination);
-        var theURLSend = 'https://localhost:3000/api/localsendbtc/';
+    send: function () {
+        var Type = 'send';
         if (this.state.destination.length > 40) {
-            theURLSend = 'https://localhost:3000/api/localsendxmr/';
-        } else {
-            theURLSend = 'https://localhost:3000/api/localsendbtc/';
+            Type = 'sendXMR';
         }
-         console.log('attempting2');       
-        var thedata = {destination:this.state.destination, amount:this.state.amount};
+        //I should refactor this process, since it's same for each request..
+        //Also, I can likely do the xmr to part from the web-client, which is more annoying, but can implement an exchange rate check..
+        var ip = 'https://' + window.location.host;
+        var route = '/api/mininero';
+        var theUrl = ip + route;
+        var token = sessionStorage.getItem('_sk');
+        var time = sessionStorage.getItem('time');
+        var timenow = mnw.now();
+        var salt2 = sessionStorage.getItem('salt2');
+        var signature = mnw.Sign(Type + String(this.state.amount).replace(".", "d") + timenow + this.state.destination);
+        var theData = { "Type": Type, "timestamp": timenow, "salt2": salt2, "issuetime": time, "signature": signature, destination: this.state.destination, amount: this.state.amount };
         if (this.state.pid != '') {
-            thedata = {destination:this.state.destination, amount:this.state.amount, pid:this.state.pid};
-        } else {
-            thedata = {destination:this.state.destination, amount:this.state.amount};
+            theData.push({ pid: this.state.pid });
         }
-                 console.log('attempting3');       
         if (window.confirm('Are you sure?')) {
             $.ajax({
-                url: theURLSend,
+                url: theUrl,
                 dataType: 'json',
                 type: 'POST',
-                data: thedata,
-                success: function(data) {
-                    this.goToTxns();                                    
+                data: theData,
+                success: function (data) {
+                    this.goToTxns();
                 }.bind(this),
-                error: function(xhr, status, err) {
+                error: function (xhr, status, err) {
                     this.goToTxns();
                 }.bind(this)
-                
             });
         }
     },
 
-    saveAddress: function() {
+    saveAddress: function () {
         window.alert('Address book not yet implemented in MiniNero Web');
     },
 
-    handleChangeDestination: function(event) {
-        this.setState({ destination: event.target.value});
+    handleChangeDestination: function (event) {
+        this.setState({ destination: event.target.value });
         //window.alert('changed destination');
     },
 
-    handleChangeAmount: function(event) {
-        this.setState({ amount: event.target.value});
-        //window.alert('changed amount');
+    handleChangeAmount: function (event) {
+        this.setState({ amount: event.target.value });
     },
 
-    handleChangePID: function(event) {
-        this.setState({ pid: event.target.value});
-        //window.alert('changed pid');
+    handleChangePID: function (event) {
+        this.setState({ pid: event.target.value });
     },
 
-    render: function() {
-
+    render: function () {
 
         return (
             <div className="content">
@@ -95,11 +93,14 @@ document.getElementById("sendlink").onclick = writeSend;
 
 //put it in the qrcode to be centered
 function writeSend() {
-    document.getElementById("qrcode").innerHTML = '';
-    ReactDOM.render(
-        <Sender />,
-        document.getElementById('innercontent')
-    );
+    sk = sessionStorage.getItem('_sk');
+    if (sk != null) {
+        document.getElementById("qrcode").innerHTML = '';
+        ReactDOM.render(
+            <Sender />,
+            document.getElementById('innercontent')
+        );
+    }
 }
 
 

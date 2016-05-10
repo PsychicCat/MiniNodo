@@ -1,3 +1,5 @@
+.vscode
+
 *.exe
 start.sh
 start.bat
@@ -43,3 +45,5 @@ config.json
 config.json~
 txndb
 txndb~
+/run.py
+/.vscode

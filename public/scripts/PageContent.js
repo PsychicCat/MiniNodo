@@ -1,7 +1,8 @@
+var pk = '';
+
 var PageContent = React.createClass({
 
     render: function () {
-
         return (
             <div className="content">
                 <h2 className="content-subhead">Welcome! </h2>
@@ -41,21 +42,116 @@ var PageContent = React.createClass({
     }
 });
 
-
 document.getElementById("homelink").onclick = writeHome;
+document.getElementById("logoutlink").onclick = writeLogout;
 
-function writeHome() {
-    document.getElementById("qrcode").innerHTML = '';
-    document.getElementById("innercontent").innerHTML='';
-
-    ReactDOM.render(
-        <PageContent />,
-        document.getElementById('innercontent')
-    );
+function writeLogout() {
+    sessionStorage.clear();
+    writeLogin();
 }
 
-//Also load it on start..
-ReactDOM.render(
-    <PageContent />,
-    document.getElementById('innercontent')
-);
+function writeHome() {
+
+    document.getElementById("qrcode").innerHTML = '';
+    document.getElementById("innercontent").innerHTML='';
+    sk = sessionStorage.getItem('_sk');
+    if (sk != '' & sk != null) {
+        //Also load it on start..
+        ReactDOM.render(
+            <PageContent />,
+            document.getElementById('innercontent')
+        );
+    }
+}
+
+function writeLogin() {
+    var sid = isLoggedIn();
+    if (!sid) {
+        document.body.style.background = "black";
+        document.getElementById("qrcode").innerHTML = '';
+        document.getElementById("innercontent").innerHTML='';
+        ReactDOM.render(
+            <LoginForm />,
+            document.getElementById("innercontent")
+        );
+    } else {
+        writeHome();
+    }
+}
+
+
+function passToSk(pass) {
+    var ip = 'https://' + window.location.host;
+    var route = '/api/salt1/';
+    var theUrl = ip + route;
+    spinner.spin(spint);
+        $.ajax({
+            url: theUrl,
+            type: 'GET',
+            success: function (data) {
+                spinner.stop();
+                var salt1 = data;
+                var salt2 = mnw.genSalt();
+                var time = mnw.now();
+                sessionStorage.setItem('salt2', salt2);
+                sessionStorage.setItem('time', time);
+                var token = mnw.genTokenClient(pass, salt1, salt2, time);
+                sessionStorage.setItem('_sk', token);
+                document.body.style.background = "white";
+                writeHome();
+                return token;
+            },
+            error: function (data) {
+                spinner.stop();
+                alert('cannot reach server!');
+                return 'false';
+            }
+        });
+}
+
+var LoginForm = React.createClass({
+  getInitialState: function() {
+        return { password: ''};
+  },
+  login: function () {
+    var sk = passToSk(this.state.password);
+  },
+  handleChangePass: function(event) {
+        this.setState({ password: event.target.value});
+  },
+  render: function () {
+    var logoStyle = {
+      display:'block',
+      maxWidth:'100%',
+      marginLeft:'auto',
+      marginRight:'auto'
+    };
+    var inputStyle = {
+    };
+    var buttonStyle = {
+       display:'block',
+      marginLeft:'auto',
+      marginRight:'auto'
+    };
+    var wrapperStyle = {
+        background : 'black',
+        font : 'white'
+    }
+    return (
+     
+        <div id="wrapper" style={wrapperStyle}>
+              <img style={logoStyle} src="images/mn620x300.png"></img>
+            
+              <form className="pure-form">
+               
+                <input type="password" value={this.state.password} onChange={this.handleChangePass} style={inputStyle} placeholder='password' className="pure-input-rounded"></input>
+              
+                <button type="submit" style={buttonStyle} onClick={this.login} className="pure-button">Login</button>
+              
+              </form>
+            </div>
+      
+    )
+  }
+});
+writeLogin();

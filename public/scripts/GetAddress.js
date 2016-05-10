@@ -14,38 +14,49 @@ var ToHex = function (sk) {
   return s.join('');
 }
 
-
 document.getElementById("addresslink").onclick = writeAddress;
 
-//put it in the qrcode to be centered
 function writeAddress() {
-  var theUrl = 'https://localhost:3000/api/localaddress/';
-  $.ajax({
-    url: theUrl,
-    type: 'GET',
-    success: function (data) {
-      addy = String(data);
-      if (addy == '') {
+  var ip = 'https://' + window.location.host;
+  var route = '/api/mininero';
+  var theUrl = ip + route;
+  var token = sessionStorage.getItem('_sk');
+  var time = sessionStorage.getItem('time');
+  var timenow = mnw.now();
+  var salt2 = sessionStorage.getItem('salt2');
+  var signature = mnw.Sign('address' + timenow, token);
+  if (token != null & token != '') {
+    spinner.spin(spint);
+    $.ajax({
+      type: "POST",
+      url: theUrl,
+      data: { "Type": "address", "timestamp": timenow, "salt2": salt2, "issuetime": time, "signature": signature },
+      success: function (data) {
+        spinner.stop();
+        addy = String(data);
+        if (addy == '') {
+          addy = String('Failed to contact simplewallet');
+        }
+        ic = document.getElementById("innercontent");
+        ic.innerHTML = '';
+        qr = document.getElementById("qrcode");
+        qr.innerHTML = '';
+        new QRCode(qr, "monero:" + addy);
+
+        ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + addy + '</p></div>';
+      },
+      error: function (data) {
+        spinner.stop();
         addy = String('Failed to contact simplewallet');
-      }
-      ic = document.getElementById("innercontent");
-      ic.innerHTML = '';
-      qr = document.getElementById("qrcode");
-      qr.innerHTML = '';
-      new QRCode(qr, "monero:" + addy);
+        ic = document.getElementById("innercontent");
+        ic.innerHTML = '';
+        qr = document.getElementById("qrcode");
+        qr.innerHTML = '';
+        new QRCode(qr, "monero:" + addy);
 
-      ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + addy + '</p></div>';
-    },
-    error: function (data) {
-      addy = String('Failed to contact simplewallet');
-      ic = document.getElementById("innercontent");
-      ic.innerHTML = '';
-      qr = document.getElementById("qrcode");
-      qr.innerHTML = '';
-      new QRCode(qr, "monero:" + addy);
-
-      ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + addy + '</p></div>';
-    },
-     timeout: 1000 // sets timeout to 3 seconds
-  });
+        ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + addy + '</p></div>';
+      },
+      timeout: 1000 // sets timeout to 3 seconds
+    });
+  }
 }
