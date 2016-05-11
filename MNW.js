@@ -70,30 +70,18 @@ MNW.prototype.ToString = function (s) {
 //gets server stored password..
 MNW.prototype.getSS = function(password, salt1) {
   //for testing
-  console.log('pass', password);
-  console.log('salt1', salt1);
   return this.ToHex(nacl.hash(this.FromString(password + salt1))).substring(0, 64);
 }
 
 //takes as input 'salt1' which is a 32 byte string
 MNW.prototype.genTokenClient = function(password, salt1, salt2, time) {
   var ss = this.getSS(password, salt1);
-    //for testing
-  console.log('time', time);
-  console.log('salt1', salt1);
-  console.log('salt2', salt2);
-  console.log('ss', ss);
   var token = nacl.hash(this.FromString(ss + time + salt2)).slice(0, 32);
-  console.log("length", token.length);
   var skpk = nacl.sign.keyPair.fromSeed(token);
   return this.ToHex(skpk.secretKey);
 }
 
 MNW.prototype.genTokenServer = function (ss, salt2, time) {
-  //for testing
-  console.log('time', time);
-  console.log('salt2', salt2);
-  console.log('ss', ss);
   var token = nacl.hash(this.FromString(ss + time + salt2)).slice(0,32);
   var skpk = nacl.sign.keyPair.fromSeed(token);
   return this.ToHex(skpk.publicKey);
