@@ -109,7 +109,7 @@ var appRouter = function (app) {
 
     //basic timestamping
     app.get("/api/mininero/", function (req, res) {
-        var seconds = String(Math.floor((new Date).getTime() / 1000));
+        var seconds = mnw.now();
         res.send(seconds);
     });
 

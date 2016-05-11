@@ -32,7 +32,7 @@ function writeBalance() {
         spinner.stop();
         alert('no connection to wallet!');
       },
-      timeout: 1000
+      timeout: 5000
     });
   }
 }

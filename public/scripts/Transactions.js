@@ -138,7 +138,7 @@ function writeTxns() {
                     document.getElementById('innercontent')
                 )
             },
-            timeout: 1000
+            timeout: 4000
         });
     }
 }

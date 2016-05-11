@@ -58,7 +58,7 @@ function writeAddress() {
 
         ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + addy + '</p></div>';
       },
-      timeout: 1000 // sets timeout to 3 seconds
+      timeout: 5000 // sets timeout to 3 seconds
     });
   }
 }

@@ -90,6 +90,7 @@ function passToSk(pass) {
             type: 'GET',
             success: function (data) {
                 spinner.stop();
+                sessionStorage.clear();
                 var salt1 = data.split(',')[0];
                 var cb_time = data.split(',')[1];
                 var offset = parseInt(cb_time, 10) - mnw.Now();
@@ -118,7 +119,8 @@ var LoginForm = React.createClass({
         return { password: ''};
   },
   login: function () {
-    var sk = passToSk(this.state.password);
+        //sessionStorage.clear();
+        var sk = passToSk(this.state.password);
   },
   handleChangePass: function(event) {
         this.setState({ password: event.target.value});

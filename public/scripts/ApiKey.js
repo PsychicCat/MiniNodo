@@ -62,7 +62,7 @@ function saveApiKey() {
           spinner.stop();
           alert('error saving apikey!');
         },
-        timeout: 1000 // sets timeout to 3 seconds
+        timeout: 5000 // sets timeout to 3 seconds
       });
     }
   }
