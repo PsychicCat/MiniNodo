@@ -12,7 +12,7 @@ var moneroWallet = require('./monero-nodejs.js');
 var MNW = require('./MNW.js'), mnw = new MNW();
 var open = require('open');
 var ip = require("ip");
-var prompt = require('prompt-sync')();
+var prompt = require('prompt');
 
 //https://www.npmjs.com/package/tweetnacl
 //https://tweetnacl.cr.yp.to/
@@ -122,28 +122,17 @@ var getPk = function () {
     return MiniNeroPk;
 }
 
-var setPassword = function () {
-    var pass1 = 'cat';
-    var pass2 = 'dog';
-    while (pass1 != pass2) {
-        pass1 = prompt.hide('password?');
-        pass2 = prompt.hide('again?');
-        if (pass1 != pass2) {
-            console.log('passwords not the same');
-        }
-    }
-    var salt1 = mnw.ToHex(nacl.randomBytes(32));
-    nconf.set('salt1:key', salt1);
-    var ss = mnw.getSS(pass1, salt1);
-    nconf.set('ss:key', ss);
-    nconf.save(function (err) {
-        fs.readFile('config.json', function (err, data) {
-            //console.dir(JSON.parse(data.toString()))
-        });
-    });
+prompt.start();
+prompt.get(['password', 'repeat'], function (err, result) {
+if (result.password != result.repeat) {
+    console.log('passwords not the same');
+    process.exit();
 }
-setPassword();
-
+var salt1 = mnw.ToHex(nacl.randomBytes(32));
+nconf.set('salt1:key', salt1);
+var ss = mnw.getSS(result.password, salt1);
+nconf.set('ss:key', ss);
+nconf.save(function (err) {
 
 pem.createPrivateKey(function (error, data) {
     var key = (data && data.key || '').toString();
@@ -210,4 +199,6 @@ pem.createPrivateKey(function (error, data) {
             });
         });
     });
+});
+});
 });

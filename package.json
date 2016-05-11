@@ -27,6 +27,6 @@
     "ip" : "*",
     "open" : "*",
     "which" : "*",
-    "prompt-sync" : "4.0.4"
+    "prompt" : "1.0.0"
   }
 }
