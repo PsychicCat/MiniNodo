@@ -22,7 +22,6 @@ function writeAddress() {
   var theUrl = ip + route;
   var token = sessionStorage.getItem('_sk');
   var issuetime = sessionStorage.getItem('issuetime');
-  var timenow = mnw.now();
   var offset = parseInt(sessionStorage.getItem('offset'), 10);
   var timenow = String(mnw.Now()+offset);
   var salt2 = sessionStorage.getItem('salt2');
