@@ -69,6 +69,9 @@ MNW.prototype.ToString = function (s) {
 
 //gets server stored password..
 MNW.prototype.getSS = function(password, salt1) {
+  //for testing
+  console.log('pass', password);
+  console.log('salt1', salt1);
   return this.ToHex(nacl.hash(this.FromString(password + salt1))).substring(0, 64);
 }
 
