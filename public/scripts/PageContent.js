@@ -7,20 +7,21 @@ var PageContent = React.createClass({
             <div className="content">
                 <h2 className="content-subhead">Welcome! </h2>
                 <p>
-                    MiniNero Web provides simple management for your Monero Mobile Wallet.
-                    Right now, this is set-up to only allow actual access via localhost.
-                    In the future, I will replace that with a password option, so you will be able 
-                    to manage your node on the go, via the web-interface.
+                    MiniNero Web provides simple on-the-go management for your Monero Mobile Wallet.
                     </p><p>
                     Additionally, this web-app will help set-up your mobile wallet.
-                    All you have to do is scan the qr code in the Api-key tab.
+                    All you have to do is scan the qr code in the Api-key tab. (App integration coming soon)
                 </p>
 
                 <h2 className="content-subhead">Getting Started</h2>
                 <p>
-                    The first thing you need to do is to click on the Api Key link in the side-bar
-                    and scan the qr code into your mobile app.You should not share the scanned qr code or the api-key at the top of that screen, as these will be your secret key
-                    for communicating with the server.Once you have scanned qr and gotten your secret key into your mobile app, you should be able to send Monero, and Monero to Bitcoin from anywhere in the world (as long as you keep your server running).
+                    To get started, simply find a Monero or bitcoin address that you wish to send to, enter it
+                  into the "send" tab, and click send.   
+                </p>
+
+                <h2 className="content-subhead">Notes </h2>
+                <p>
+                This app has been test on Chrome / Edge / Firefox. If you have a device running Safari and want to send some feedback, please let me know if it works or not. Additionally, if you want to help by adding features, let me know.
                 </p>
                 
                 <h2 className="content-subhead">SSL Certificate</h2>
