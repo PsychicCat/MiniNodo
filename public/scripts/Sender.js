@@ -43,6 +43,7 @@ var Sender = React.createClass({
                     this.setState({ destination: data.xmr_receiving_address});
                     this.setState({amount:data.xmr_amount_total});
                     this.setState({pid: data.xmr_required_payment_id})
+                    this.setState({uuid: data.uuid})
                     this.send()
 
                 }.bind(this),
@@ -82,6 +83,9 @@ var Sender = React.createClass({
         console.log('attempting');
         if (this.state.pid != '') {
             theData['pid'] = this.state.pid;
+        } 
+        if (this.state.uuid != '') {
+            theData['uuid'] = this.state.uuid;
         }
         if (window.confirm('Are you sure you want to send '+String(this.state.amount)+' xmr?')) {
             spinner.spin(spint);
@@ -93,6 +97,7 @@ var Sender = React.createClass({
                 success: function (data) {
                 spinner.stop();
                     console.log('success');
+                    writeBalance();
                     this.goToTxns();
                 }.bind(this),
                 error: function (xhr, status, err) {
@@ -138,7 +143,7 @@ var Sender = React.createClass({
 
                     <fieldset className="pure-group">
                         <input type="text" className="pure-input-1" placeholder="Save Name"/>
-                        <textarea className="pure-input-1" placeholder="Transaction Memo"></textarea>
+                        <textarea className="pure-input-1" placeholder="Transaction Memo">{this.state.uuid}</textarea>
                     </fieldset>
                     <button onClick={this.saveAddress} className="pure-button pure-input-1 pure-button-primary">Save Address</button>
                     <button onClick={this.send} className="pure-button pure-input-1 pure-button-primary">Send</button>

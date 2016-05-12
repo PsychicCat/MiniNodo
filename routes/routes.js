@@ -212,6 +212,9 @@ var appRouter = function (app) {
                          });
                     }, 5000); 
                 });
+                
+            //use this only for apps, and not web..
+            //(with apps, you don't have to worry about the cors.., so set and forget)
             } else if (req.body.Type == "send") {
                 if (!req.body.amount || !req.body.destination) {
                     return res.send("missing amount or destination");
@@ -273,6 +276,7 @@ var appRouter = function (app) {
                         }, 5000);
                     });
                 }
+
             } else if (req.body.Type == "sendXMR") {
                 var destinations = { amount: req.body.amount, address: req.body.destination };
                 var Pid = "None";
@@ -280,12 +284,16 @@ var appRouter = function (app) {
                     var options = { pid: req.body.pid };
                     Pid = req.body.pid;
                 }
+                var uuid = "None";
+                if (req.body.uuid) {
+                    uuid = req.body.uuid;
+                }
                 Wallet.transfer(destinations, options).then(function (txids) {
                     console.log(txids);
                     var txn = {
                         destination: "none",
                         btcamount: "0",
-                        xmrtouuid: "none",
+                        xmrtouuid: uuid,
                         xmramount: req.body.amount,
                         xmraddr: req.body.destination,
                         xmrpid: Pid,
