@@ -23,7 +23,9 @@ function writeAddress() {
   var token = sessionStorage.getItem('_sk');
   var issuetime = sessionStorage.getItem('issuetime');
   var offset = parseInt(sessionStorage.getItem('offset'), 10);
-  var timenow = String(mnw.Now()+offset);
+  var lastNonce = parseInt(sessionStorage.getItem('lastNonce'), 10);
+  var timenow  = String(Math.max(mnw.Now()+offset, lastNonce+1));
+  sessionStorage.setItem('lastNonce', timenow);
   var salt2 = sessionStorage.getItem('salt2');
   var signature = mnw.Sign('address' + timenow, token);
   if (token != null & token != '') {

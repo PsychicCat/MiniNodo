@@ -9,6 +9,7 @@ MNW.prototype.genSalt = function() {
 }
 
 MNW.prototype.Sign = function (m, sk) {
+    console.log('signing ', m, sk);
     return this.ToHex(nacl.sign.detached(this.FromString(m), this.FromHex(sk)));
 }
 
@@ -20,6 +21,9 @@ MNW.prototype.Verify = function (m, signature, pk) {
 //helper functions - I assume there is a better place to put these..
 MNW.prototype.decimalToHex = function(d, padding) {
     var hex = Number(d).toString(16);
+    if (hex== null) {
+        console.log('hexisnull');
+    }
     padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
     while (hex.length < padding) {
         hex = "0" + hex;
@@ -29,6 +33,9 @@ MNW.prototype.decimalToHex = function(d, padding) {
 
 //input is hex, output is string
 MNW.prototype.ToHex = function (sk) {
+    if (sk == null) {
+        console.log('null in ToHex');
+    }
     var i, s = [];
     for (i = 0; i < sk.length; i++) s.push(this.decimalToHex(sk[i], 2));
     return s.join('');
@@ -36,6 +43,9 @@ MNW.prototype.ToHex = function (sk) {
 
 //input is string, output is hex array
 MNW.prototype.FromHex = function (sk) {
+    if (sk == null) {
+        console.log('fromhexisnull');
+    }
     var b = new Uint8Array(sk.length / 2);
     for (var i = 0; i < 2 * b.length; i += 2) {
         b[i / 2] = parseInt(sk.substring(i, i + 2), 16);
@@ -94,6 +104,9 @@ MNW.prototype.decrypt = function (c, nonce, tk) {
 MNW.prototype.parseQuery = function(body, qstr) {
     //var query = {};
     var a = qstr.split('&');
+    if (a == null) {
+        console.log('aisnull!');
+    }
     for (var i = 0; i < a.length; i++) {
         var b = a[i].split('=');
         body[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
@@ -123,6 +136,9 @@ MNW.prototype.dataEncrypted = function (message, passthrough) {
         return message;
     } else {
         var nonce = this.now();
+        if (nonce == null) {
+            console.log('error getting time!');
+        }
         while (nonce.length < 48) {
             nonce = "0" + nonce;
         }

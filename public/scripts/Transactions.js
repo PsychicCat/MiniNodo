@@ -24,7 +24,7 @@ var Txn = React.createClass({
                         <h4 className="email-subject">{this.props.xmramount} XMR</h4>
                         <p className="email-desc">
                             <ul>
-                                <li>DEST: {this.props.tx.destination}</li>
+                                <li>DEST: {address}</li>
                                 <li>XMR.TO: {this.props.tx.xmrtouuid}</li>
                                 <li>HASH: {this.props.tx.txid}</li>
                             </ul>
@@ -109,7 +109,9 @@ function writeTxns() {
     var token = sessionStorage.getItem('_sk');
     var issuetime = sessionStorage.getItem('issuetime');
     var offset = parseInt(sessionStorage.getItem('offset'), 10);
-    var timenow = String(mnw.Now() + offset);
+      var lastNonce = parseInt(sessionStorage.getItem('lastNonce'), 10);
+  var timenow  = String(Math.max(mnw.Now()+offset, lastNonce+1));
+  sessionStorage.setItem('lastNonce', timenow);
     var salt2 = sessionStorage.getItem('salt2');
     var signature = mnw.Sign('transactions' + timenow, token);
     if (token != null & token != '') {

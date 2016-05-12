@@ -19,7 +19,7 @@
     "JSON" : "*",
     "nedb" : "*",
     "monero-nodejs" : "*",
-    "xmrto-api" : "*",
+    "xmrto-api" : "1.0.0",
     "nconf" : "*",
     "fs" : "*",
     "os-tmpdir":"^1.0.1",

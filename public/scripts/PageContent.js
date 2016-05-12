@@ -92,10 +92,14 @@ function passToSk(pass) {
                 spinner.stop();
                 sessionStorage.clear();
                 var salt1 = data.split(',')[0];
-                var cb_time = data.split(',')[1];
-                var offset = parseInt(cb_time, 10) - mnw.Now();
+                var cb_time = parseInt(data.split(',')[1], 10);
+                var lastNonce = data.split(',')[2];
+                console.log('lastNonce', lastNonce);
+                sessionStorage.setItem('lastNonce', lastNonce);
+                var now = mnw.Now();
+                var offset = Math.max(cb_time - now, 30);
+                console.log('cbtime, now, offset',cb_time, now, offset);
                 sessionStorage.setItem('offset', String(offset));
-                console.log('offset', offset);
                 var salt2 = mnw.genSalt();
                 var issuetime = String(cb_time);
                 sessionStorage.setItem('salt2', salt2);

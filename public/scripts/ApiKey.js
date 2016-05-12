@@ -43,17 +43,19 @@ function saveApiKey() {
     var route = '/api/mininero';
     var theUrl = ip + route;
     var token = sessionStorage.getItem('_sk');
-    var time = sessionStorage.getItem('time');
-    var offset = sessionStorage.getItem('offset');
-    var timenow = String(mnw.Now()+offset);
-    var salt2 = sessionStorage.getItem('salt2');
+    var issuetime = sessionStorage.getItem('issuetime');
+    var offset = parseInt(sessionStorage.getItem('offset'), 10);
+    var lastNonce = parseInt(sessionStorage.getItem('lastNonce'), 10);
+    var timenow  = String(Math.max(mnw.Now()+offset, lastNonce+1));
+    sessionStorage.setItem('lastNonce', timenow);
+    var salt2 = sessionStorage.getItem('salt2'); 
     var signature = mnw.Sign('apikey' + timenow + pk, token);
     if (token != null & token != '') {
       spinner.spin(spint);
       $.ajax({
         type: "POST",
         url: theUrl,
-        data: { "Type": "apikey", "timestamp": timenow, "salt2": salt2, "issuetime": time, "signature": signature, apikey: pk },
+        data: { "Type": "apikey", "timestamp": timenow, "salt2": salt2, "issuetime": issuetime, "signature": signature, apikey: pk },
         success: function (data) {
           spinner.stop();
           alert(data);

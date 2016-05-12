@@ -3,7 +3,7 @@
 var Sender = React.createClass({
 
     getInitialState: function () {
-        return { amount: '', destination: '', pid: '' };
+        return { amount: '', destination: '', pid: '',uuid:'' };
     },
 
     goToTxns: function () {
@@ -12,12 +12,59 @@ var Sender = React.createClass({
             writeTxns();
         });
     },
+    
+    makeorder: function () {
+        var Type = 'xmrtoorder';
+        var ip = 'https://' + window.location.host;
+        var route = '/api/mininero';
+        var theUrl = ip + route;
+        var token = sessionStorage.getItem('_sk');
+        var issuetime = sessionStorage.getItem('issuetime');
+        var offset = parseInt(sessionStorage.getItem('offset'), 10);
+        var lastNonce = parseInt(sessionStorage.getItem('lastNonce'), 10);
+        var timenow  = String(Math.max(mnw.Now()+offset, lastNonce+1));
+        sessionStorage.setItem('lastNonce', timenow);
+        var salt2 = sessionStorage.getItem('salt2');
+        var dest = this.state.destination;
+        var signature = mnw.Sign(Type + String(this.state.amount).replace(".", "d") + timenow + dest, token);
+        var theData = { "Type": Type, "timestamp": timenow, "salt2": salt2, "issuetime": issuetime, "signature": signature, "destination": dest, amount: this.state.amount };
+        
+        console.log('attempting');
+                spinner.spin(spint);
+            $.ajax({
+                url: theUrl,
+                dataType: 'json',
+                type: 'POST',
+                data: theData,
+                success: function (data) {
+                    spinner.stop();
+                    console.log('success');
+                    console.log(data);
+                    this.setState({ destination: data.xmr_receiving_address});
+                    this.setState({amount:data.xmr_amount_total});
+                    this.setState({pid: data.xmr_required_payment_id})
+                    this.send()
 
+                }.bind(this),
+                error: function (xhr, status, err) {
+                    spinner.stop();
+                    console.log('fail'+err);
+                    //this.goToTxns();
+                }.bind(this), 
+                timeout : 10000
+            });
+    },
+    
     send: function () {
         var Type = 'send';
-        if (this.state.destination.length > 40) {
-            Type = 'sendXMR';
-        }
+        console.log('destination is', this.state.destination);
+        var dest = String(this.state.destination);
+        if (dest.length < 40) {
+            this.makeorder();
+            //Type = 'sendXMR';
+        } else {
+             Type = 'sendXMR';
+        console.log('length error there..');
         //I should refactor this process, since it's same for each request..
         //Also, I can likely do the xmr to part from the web-client, which is more annoying, but can implement an exchange rate check..
         var ip = 'https://' + window.location.host;
@@ -26,26 +73,36 @@ var Sender = React.createClass({
         var token = sessionStorage.getItem('_sk');
         var issuetime = sessionStorage.getItem('issuetime');
         var offset = parseInt(sessionStorage.getItem('offset'), 10);
-        var timenow = String(mnw.Now() + offset);
+        var lastNonce = parseInt(sessionStorage.getItem('lastNonce'), 10);
+        var timenow  = String(Math.max(mnw.Now()+offset, lastNonce+1));
+        sessionStorage.setItem('lastNonce', timenow);
         var salt2 = sessionStorage.getItem('salt2');
-        var signature = mnw.Sign(Type + String(this.state.amount).replace(".", "d") + timenow + this.state.destination);
-        var theData = { "Type": Type, "timestamp": timenow, "salt2": salt2, "issuetime": issuetime, "signature": signature, destination: this.state.destination, amount: this.state.amount };
+        var signature = mnw.Sign(Type + String(this.state.amount).replace(".", "d") + timenow + dest, token);
+        var theData = { "Type": Type, "timestamp": timenow, "salt2": salt2, "issuetime": issuetime, "signature": signature, "destination": dest, amount: this.state.amount };
+        console.log('attempting');
         if (this.state.pid != '') {
-            theData.push({ pid: this.state.pid });
+            theData['pid'] = this.state.pid;
         }
-        if (window.confirm('Are you sure?')) {
+        if (window.confirm('Are you sure you want to send '+String(this.state.amount)+' xmr?')) {
+            spinner.spin(spint);
             $.ajax({
                 url: theUrl,
                 dataType: 'json',
                 type: 'POST',
                 data: theData,
                 success: function (data) {
+                spinner.stop();
+                    console.log('success');
                     this.goToTxns();
                 }.bind(this),
                 error: function (xhr, status, err) {
+                    spinner.stop();
+                    console.log('fail');
                     this.goToTxns();
-                }.bind(this)
+                }.bind(this),
+                   timeout : 5000
             });
+        }
         }
     },
 
@@ -54,6 +111,7 @@ var Sender = React.createClass({
     },
 
     handleChangeDestination: function (event) {
+        console.log(this.state.destination);
         this.setState({ destination: event.target.value });
         //window.alert('changed destination');
     },

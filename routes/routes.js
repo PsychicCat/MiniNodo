@@ -17,9 +17,12 @@ nconf.argv().env().file({ file: 'config.json' });
 var ip = require("ip");
 
 var TOKENTIMEOUT = 60 * 60; //timeout tokens for mininero web (change if desired)
-var TIMEOUT = 30; //requests must have been made within last TIMEOUT seconds.. this avoids a scenario where someone mitm you, and you change your mind, after they hold your transaction..
+var TIMEOUT = 300; //requests must have been made within last TIMEOUT seconds.. this avoids a scenario where someone mitm you, and you change your mind, after they hold your transaction..
 
 var useEncryption = false; //this is set in the request for now
+
+const xmr2btc = require('xmrto-api')
+const xmrTo = new xmr2btc();
 
 var setPk = function (pk) {
     //replace with qr in web-browser
@@ -40,20 +43,35 @@ var Verifier = function (body) {
         console.log('no timestamp');
         return false;
     }
+    if (isNaN(body.timestamp)) {
+        console.log('isNaN');
+        lastNonce = parseInt(nconf.get("lastNonce:nonce"), 10);
+        console.log('lastnonce', lastNonce);
+        return false;
+    }
     var timestampi = parseInt(body.timestamp, 10);
     lastNonce = parseInt(nconf.get("lastNonce:nonce"), 10);
+
+    //Note,that this could be messed up by server offset.. 
     //increment nonce condition
     if (timestampi <= lastNonce) {
         console.log('bad nonce');
+        console.log('last nonce', lastNonce);
+        console.log('timestamp', timestampi);
         return false;
     } else {
         nconf.set('lastNonce:nonce', timestampi);
     }
 
     //timeout condition
-    if (Math.abs(timestampi - mnw.Now()) > TIMEOUT) {
+    if (timestampi - mnw.Now() > TIMEOUT) {
         console.log('timeout');
+        console.log('last nonce', mnw.Now());
+        console.log('timestamp', timestampi);
         return false;
+    } else {
+        console.log('last nonce', mnw.Now());
+        console.log('timestamp', timestampi);
     }
 
     //verify signature
@@ -104,7 +122,22 @@ var appRouter = function (app) {
     app.get('/api/salt1/', function (req, res) {
         console.log('salt1 request');
         var salt1 = nconf.get("salt1:key");
-        return res.send(salt1+','+mnw.now());
+        var lastNonce = nconf.get("lastNonce:nonce") ;
+        
+        if (isNaN(lastNonce)) {
+            lastNonce = mnw.now();
+            console.log('saving last nonce as ', lastNonce);
+            nconf.set('lastNonce:nonce', lastNonce);
+            nconf.save(function (err) {
+                console.log('error saving to config...');
+            });
+        } else {
+            lastNonce = parseInt(lastNonce, 10);
+        }
+        
+        var m = salt1+','+mnw.now()+','+lastNonce;
+        console.log(m);
+        return res.send(m);
     });
 
     //basic timestamping
@@ -164,8 +197,21 @@ var appRouter = function (app) {
                 return res.send(mnw.dataEncrypted("Success!", useEncryption));
             } else if (req.body.Type == "transactions") {
                 db.find({}).sort({ time: -1 }).exec(function (err, docs) {
-                return res.send(mnw.dataEncrypted(JSON.stringify(docs), useEncryption));
-            });
+                return res.send(mnw.dataEncrypted(JSON.stringify(docs), useEncryption)); });
+             } else if (req.body.Type == "xmrtoorder") {
+                dest = req.body.destination;
+                amount = req.body.amount;
+                var uuid = 'none';
+                xmrTo.createOrder(req.body.amount, req.body.destination).then(function(order){
+                    console.log(order);
+                    uuid = order.uuid;
+                    setTimeout(function () {
+                        xmrTo.queryOrder(uuid).then(function(qorder){
+                            console.log(qorder);
+                            return res.send(JSON.stringify(qorder));
+                         });
+                    }, 5000); 
+                });
             } else if (req.body.Type == "send") {
                 if (!req.body.amount || !req.body.destination) {
                     return res.send("missing amount or destination");
