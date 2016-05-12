@@ -159,7 +159,7 @@ var LoginForm = React.createClass({
                
                 <input type="password" value={this.state.password} onChange={this.handleChangePass} style={inputStyle} placeholder='password' className="pure-input-rounded"></input>
               
-                <button type="submit" style={buttonStyle} onClick={this.login} className="pure-button">Login</button>
+                <button type="submit" style={buttonStyle} onClick={this.login} className="pure-button pure-button-primary">Login</button>
               
               </form>
             </div>

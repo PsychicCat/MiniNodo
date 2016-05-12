@@ -289,7 +289,7 @@ var appRouter = function (app) {
                     uuid = req.body.uuid;
                 }
                 Wallet.transfer(destinations, options).then(function (txids) {
-                    console.log(txids);
+                    console.log("transfer results:",txids);
                     var txn = {
                         destination: "none",
                         btcamount: "0",
