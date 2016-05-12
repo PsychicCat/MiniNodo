@@ -15,6 +15,7 @@ var Txn = React.createClass({
 
         var classes = 'email-item pure-g';
         var content = "To: " + address;
+        var mb = "http://moneroblocks.info/search/";
         if (this.props.selected) {
             classes += ' email-item-selected';
             return (
@@ -26,7 +27,7 @@ var Txn = React.createClass({
                             <ul>
                                 <li>DEST: {address}</li>
                                 <li>XMR.TO: {this.props.tx.xmrtouuid}</li>
-                                <li>HASH: {this.props.tx.txid}</li>
+                                <li>HASH: <a href={mb+ this.props.tx.txid}>{this.props.tx.txid}</a></li>
                             </ul>
                         </p>
                     </div>
@@ -103,6 +104,7 @@ var App = React.createClass({
 document.getElementById("txnlink").onclick = writeTxns;
 
 function writeTxns() {
+    clicker();
     var ip = 'https://' + window.location.host;
     var route = '/api/mininero';
     var theUrl = ip + route;

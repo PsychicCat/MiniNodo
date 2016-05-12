@@ -46,7 +46,9 @@ document.getElementById("homelink").onclick = writeHome;
 document.getElementById("logoutlink").onclick = writeLogout;
 
 function writeLogout() {
+    clicker();
     sessionStorage.clear();
+    document.getElementById('balance').innerHTML = '0 XMR';
     writeLogin();
 }
 
@@ -61,6 +63,7 @@ function writeHome() {
             <PageContent />,
             document.getElementById('innercontent')
         );
+        writeBalance();
     }
 }
 

@@ -18,6 +18,7 @@ function ToHex(sk) {
 var pk = '';//this will be the new MiniNeroPk..
 
 function genApiKey() {
+  clicker();
   var token = sessionStorage.getItem('_sk');
   if (token != null & token != '') {
     //fix for more even css

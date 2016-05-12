@@ -17,6 +17,7 @@ var ToHex = function (sk) {
 document.getElementById("addresslink").onclick = writeAddress;
 
 function writeAddress() {
+  clicker();
   var ip = 'https://' + window.location.host;
   var route = '/api/mininero';
   var theUrl = ip + route;

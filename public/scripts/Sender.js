@@ -152,6 +152,7 @@ document.getElementById("sendlink").onclick = writeSend;
 
 //put it in the qrcode to be centered
 function writeSend() {
+    clicker();
     sk = sessionStorage.getItem('_sk');
     if (sk != null) {
         document.getElementById("qrcode").innerHTML = '';
