@@ -7,19 +7,23 @@ var request = require('request');
 var request2 = require('request');
 var Datastore = require('nedb')
     , db = new Datastore({ filename: 'txndb', autoload: true });
-//var moneroWallet = require('monero-nodejs');
-var moneroWallet = require('../monero-nodejs.js');
 var MNW = require('../MNW.js'), mnw = new MNW();
-var Wallet = new moneroWallet('localhost', 18082);
 var nconf = require('nconf');
 var fs = require('fs');
 nconf.argv().env().file({ file: 'config.json' });
+    
+//var moneroWallet = require('monero-nodejs');
+var moneroWallet = require('../monero-nodejs.js');
+var simplewalletport = parseInt(nconf.get("simplewallet:port"), 10);
+var Wallet = new moneroWallet('localhost', simplewalletport);
+
 var ip = require("ip");
 
 var TOKENTIMEOUT = 60 * 60; //timeout tokens for mininero web (change if desired)
 var TIMEOUT = 300; //requests must have been made within last TIMEOUT seconds.. this avoids a scenario where someone mitm you, and you change your mind, after they hold your transaction..
 
-var useEncryption = false; //this is set in the request for now
+//this is set in the request for now and doesn't affect https
+var useEncryption = false; 
 
 const xmr2btc = require('xmrto-api')
 const xmrTo = new xmr2btc();

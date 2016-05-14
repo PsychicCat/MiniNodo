@@ -1,4 +1,12 @@
 .vscode
+cn_deserialize
+simpleminer
+blockchain_dump
+blockchain_import
+blockchain_converter
+blockchain_export
+simplewallet
+bitmonerod
 
 *.exe
 start.sh

@@ -138,7 +138,7 @@ var Sender = React.createClass({
                     <fieldset className="pure-group">
                         <input type="text" className="pure-input-1" value={this.state.destination} onChange={this.handleChangeDestination} placeholder="Destination (BTC or XMR)" required/>
                         <input type="text" className="pure-input-1" value={this.state.pid} onChange={this.handleChangePID} placeholder="PID"/>
-                        <input type="number" className="pure-input-1" value={this.state.amount} onChange={this.handleChangeAmount} placeholder="Amount" step="any" required/>
+                        <input type="number" className="pure-input-1" value={this.state.amount} onChange={this.handleChangeAmount} placeholder="Amount (BTC or XMR, depending on above)" step="any" required/>
                     </fieldset>
 
                     <fieldset className="pure-group">

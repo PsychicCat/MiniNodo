@@ -6,6 +6,7 @@ var nacl = require("tweetnacl");
 var fs = require('fs');
 var path = require('path');
 var nconf = require('nconf');
+nconf.argv().env().file({ file: 'config.json' });
 var Datastore = require('nedb')
     , db = new Datastore({ filename: 'txndb', autoload: true });
 var moneroWallet = require('./monero-nodejs.js');
@@ -14,16 +15,16 @@ var open = require('open');
 var ip = require("ip");
 var prompt = require('prompt');
 
-//https://www.npmjs.com/package/tweetnacl
-//https://tweetnacl.cr.yp.to/
-var portset = 3000;
-var portset = process.env.PORT || 8080; //this line for heroku
 
+var portset = process.env.PORT || 3000; 
+var simplewalletport = 18082;
+nconf.set('simplewallet:port', simplewalletport);
+nconf.set('mininodo:port', portset);
+nconf.save();
+var hateHttps = false;
 var addrset = 'https://' + String(ip.address()) + ':' + String(portset);
 
-//Also change this on routes (I will fix later so you can set it only here)
-//var Wallet = new moneroWallet('localhost', 18082);
-var Wallet = new moneroWallet();
+var Wallet = new moneroWallet('localhost', simplewalletport);
 
 
 
@@ -95,7 +96,7 @@ function reCheckTransfers() {
     checkTransfers();
 }
 
-nconf.argv().env().file({ file: 'config.json' });
+
 
 //set this true, to update from old-style parsing.
 if (1 == 0) {
@@ -111,16 +112,48 @@ var getPk = function () {
         //console.log(mnw.ToHex(skpk.secretKey));
         MiniNeroPk = mnw.ToHex(skpk.publicKey);
         nconf.set('MiniNeroPk:key', MiniNeroPk);
-        nconf.save(function (err) {
-            fs.readFile('config.json', function (err, data) {
-                //console.dir(JSON.parse(data.toString()))
-            });
-        });
+        nconf.save();
     } else {
         MiniNeroPk = nconf.get("MiniNeroPk:key");
     }
     return MiniNeroPk;
 }
+
+function serverCallback() {
+        //console.log("Listening on port %s...", server.address().port);
+                //check every 100 seconds for new transfers, which is half of the block-speed
+                var txnChecker = setInterval(checkTransfers, 100 * 1000);
+
+                MiniNeroPk = getPk();
+                port = portset;
+                var swport = simplewalletport
+                addr = addrset;
+
+                //automatically open web app on launch
+                localaddr = 'https://localhost:' + port;
+                //this might not work for purely remote users
+                console.log("MiniNero web running on ", addrset);
+
+                //auto open on start.. (needs better error handling) 
+                /*
+                open(localaddr, function (err) {
+                if (err) throw err;
+                    console.log('Possible error opening browser');
+                });
+                */
+
+                if (!nconf.get("lastNonce")) {
+                    lastNonce = Math.floor((new Date).getTime() / 1000);
+                } else {
+                    lastNonce = nconf.get("lastNonce:nonce");
+                }
+                Lasttime = 0;
+}
+
+
+//
+//MAIN
+//
 
 prompt.start();
 prompt.get(['password', 'repeat'], function (err, result) {
@@ -162,43 +195,18 @@ pem.createPrivateKey(function (error, data) {
 
             var routes = require("./routes/routes.js")(app);
 
-            //If you hate https:
-            //var server = app.listen(port,  function () {
-
-            //else
             port = portset;
             addr = addrset;
-            var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(port, function () {
-                //console.log("Listening on port %s...", server.address().port);
-                //check every 100 seconds for new transfers, which is half of the block-speed
-                var txnChecker = setInterval(checkTransfers, 100 * 1000);
-
-                MiniNeroPk = getPk();
-                port = portset;
-                addr = addrset;
-
-                //automatically open web app on launch
-                localaddr = 'https://localhost:' + port;
-                //this might not work for purely remote users
-                console.log("MiniNero web running on ", addrset);
-
-                //auto open on start.. (needs better error handling) 
-                /*
-                open(localaddr, function (err) {
-                if (err) throw err;
-                    console.log('Possible error opening browser');
-                });
-                */
-
-                if (!nconf.get("lastNonce")) {
-                    lastNonce = Math.floor((new Date).getTime() / 1000);
-                } else {
-                    lastNonce = nconf.get("lastNonce:nonce");
-                }
-                Lasttime = 0;
-            });
+            
+            if (hateHttps == true) {
+                //not recommended, but possibly necessary for heroku or such
+                var server = app.listen(port,  serverCallback);
+            } else {
+                var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(port,serverCallback); 
+            }
         });
     });
 });
 });
 });
+
