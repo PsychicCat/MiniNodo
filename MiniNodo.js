@@ -16,8 +16,29 @@ var ip = require("ip");
 var prompt = require('prompt');
 
 
-var portset = process.env.PORT || 3000; 
+var portset = process.env.PORT || 3000;
 var simplewalletport = 18082;
+
+//simple way to do it, will update later..
+//for now: password is first arg, server port is second arg, simplewallet port is third arg
+//get command line arguments via mininist
+
+var argv = require('minimist')(process.argv.slice(2));
+if (argv['h'] != undefined || argv['help'] != undefined) {
+    console.log('possible command line arguments are:');
+    console.log('-p <password> ');
+    console.log('-mp <port for mininero web>');
+    console.log('-swp <simplewallet port>');
+}
+if (argv['mp'] != undefined) {
+    portset = argv['mp'];
+    console.log('read mininero web port from command line as ' + portset);
+}
+if (argv['swp'] != undefined) {
+    simplewalletport = argv['swp'];
+    console.log('read simplewallet port from command line as ' + simplewalletport);
+}
+
 nconf.set('simplewallet:port', simplewalletport);
 nconf.set('mininodo:port', portset);
 nconf.save();
@@ -120,93 +141,109 @@ var getPk = function () {
 }
 
 function serverCallback() {
-        //console.log("Listening on port %s...", server.address().port);
-                //check every 100 seconds for new transfers, which is half of the block-speed
-                var txnChecker = setInterval(checkTransfers, 100 * 1000);
+    //console.log("Listening on port %s...", server.address().port);
+    //check every 100 seconds for new transfers, which is half of the block-speed
+    var txnChecker = setInterval(checkTransfers, 100 * 1000);
 
-                MiniNeroPk = getPk();
-                port = portset;
-                var swport = simplewalletport
-                addr = addrset;
+    MiniNeroPk = getPk();
+    port = portset;
+    var swport = simplewalletport
+    addr = addrset;
 
-                //automatically open web app on launch
-                localaddr = 'https://localhost:' + port;
-                //this might not work for purely remote users
-                console.log("MiniNero web running on ", addrset);
+    //automatically open web app on launch
+    localaddr = 'https://localhost:' + port;
+    //this might not work for purely remote users
+    console.log("MiniNero web running on ", addrset);
 
-                //auto open on start.. (needs better error handling) 
-                /*
-                open(localaddr, function (err) {
-                if (err) throw err;
-                    console.log('Possible error opening browser');
-                });
-                */
+    //auto open on start.. (needs better error handling) 
+    /*
+    open(localaddr, function (err) {
+    if (err) throw err;
+        console.log('Possible error opening browser');
+    });
+    */
 
-                if (!nconf.get("lastNonce")) {
-                    lastNonce = Math.floor((new Date).getTime() / 1000);
-                } else {
-                    lastNonce = nconf.get("lastNonce:nonce");
-                }
-                Lasttime = 0;
+    if (!nconf.get("lastNonce")) {
+        lastNonce = Math.floor((new Date).getTime() / 1000);
+    } else {
+        lastNonce = nconf.get("lastNonce:nonce");
+    }
+    Lasttime = 0;
 }
 
+function passwordPromptCallback(err, result) {
+
+    if (result.password != result.repeat) {
+        console.log('passwords not the same');
+        process.exit();
+    }
+
+    var salt1 = mnw.ToHex(nacl.randomBytes(32));
+    nconf.set('salt1:key', salt1);
+    var ss = mnw.getSS(result.password, salt1);
+    nconf.set('ss:key', ss);
+    nconf.save(doPemStuff(err));
+}
+
+function passwordArgCallback(pass) {
+    console.log('read password from command line as ' + pass);
+    var salt1 = mnw.ToHex(nacl.randomBytes(32));
+    nconf.set('salt1:key', salt1);
+    var ss = mnw.getSS(pass, salt1);
+    nconf.set('ss:key', ss);
+    nconf.save(doPemStuff());
+}
+
+function doPemStuff(err) {
+
+    pem.createPrivateKey(function (error, data) {
+        var key = (data && data.key || '').toString();
+
+        pem.createCertificate({ clientKey: key, days: 365, selfSigned: true }, function (err, keysnew) {
+
+            pem.readPkcs12('cert.p12', { p12Password: 'cat' }, function (error, keys) {
+                if (error != null) {
+                    //console.log("created new ssl cert.p12\n");
+                    keys = keysnew;
+
+                    pem.createPkcs12(keysnew.serviceKey, keysnew.certificate, 'cat', { cipher: 'aes256' }, function (err, pkcs12) {
+                        fs.writeFile('cert.p12', pkcs12['pkcs12'], 'binary');
+                    });
+                } else {
+                    //console.log("loaded ssl cert.p12");
+                    keys.serviceKey = keys.key;
+                    keys.certificate = keys.cert;
+                }
+
+                var app = express();
+                //MiniNero Web (for now, comment this line out if desired)
+                app.use('/', express.static(path.join(__dirname, 'public')));
+
+                app.use(bodyParser.json());
+                app.use(bodyParser.urlencoded({ extended: true }));
+
+                var routes = require("./routes/routes.js")(app);
+
+                port = portset;
+                addr = addrset;
+
+                if (hateHttps == true) {
+                    //not recommended, but possibly necessary for heroku or such
+                    var server = app.listen(port, serverCallback);
+                } else {
+                    var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(port, serverCallback);
+                }
+            });
+        });
+    });
+}
 
 //
 //MAIN
 //
-
-prompt.start();
-prompt.get(['password', 'repeat'], function (err, result) {
-if (result.password != result.repeat) {
-    console.log('passwords not the same');
-    process.exit();
+if (argv['p'] != undefined) {
+    passwordArgCallback(argv['p']);
+} else {
+    prompt.start();
+    prompt.get(['password', 'repeat'], passwordPromptCallback);
 }
-var salt1 = mnw.ToHex(nacl.randomBytes(32));
-nconf.set('salt1:key', salt1);
-var ss = mnw.getSS(result.password, salt1);
-nconf.set('ss:key', ss);
-nconf.save(function (err) {
-
-pem.createPrivateKey(function (error, data) {
-    var key = (data && data.key || '').toString();
-
-    pem.createCertificate({ clientKey: key, days: 365, selfSigned: true }, function (err, keysnew) {
-
-        pem.readPkcs12('cert.p12', { p12Password: 'cat' }, function (error, keys) {
-            if (error != null) {
-                //console.log("created new ssl cert.p12\n");
-                keys = keysnew;
-
-                pem.createPkcs12(keysnew.serviceKey, keysnew.certificate, 'cat', { cipher: 'aes256' }, function (err, pkcs12) {
-                    fs.writeFile('cert.p12', pkcs12['pkcs12'], 'binary');
-                });
-            } else {
-                //console.log("loaded ssl cert.p12");
-                keys.serviceKey = keys.key;
-                keys.certificate = keys.cert;
-            }
-
-            var app = express();
-            //MiniNero Web (for now, comment this line out if desired)
-            app.use('/', express.static(path.join(__dirname, 'public')));
-
-            app.use(bodyParser.json());
-            app.use(bodyParser.urlencoded({ extended: true }));
-
-            var routes = require("./routes/routes.js")(app);
-
-            port = portset;
-            addr = addrset;
-            
-            if (hateHttps == true) {
-                //not recommended, but possibly necessary for heroku or such
-                var server = app.listen(port,  serverCallback);
-            } else {
-                var server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app).listen(port,serverCallback); 
-            }
-        });
-    });
-});
-});
-});
-

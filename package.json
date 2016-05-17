@@ -27,6 +27,7 @@
     "ip" : "*",
     "open" : "*",
     "which" : "*",
-    "prompt" : "1.0.0"
+    "prompt" : "1.0.0",
+    "minimist" : "1.2.0"
   }
 }
