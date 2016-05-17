@@ -29,6 +29,7 @@ if (argv['h'] != undefined || argv['help'] != undefined) {
     console.log('-p <password> ');
     console.log('-mp <port for mininero web>');
     console.log('-swp <simplewallet port>');
+    console.log('-w    opens your browser to the app');
 }
 if (argv['mp'] != undefined) {
     portset = argv['mp'];
@@ -55,7 +56,7 @@ var Wallet = new moneroWallet('localhost', simplewalletport);
 //
 //Check for incoming transfers, and add new transfers to wallet..
 //
-//
+//To do: split into outgoing / incoming, and handle better
 function checkTransfers() {
     //console.log("Checking for incoming transactions..");
     try {
@@ -156,12 +157,12 @@ function serverCallback() {
     console.log("MiniNero web running on ", addrset);
 
     //auto open on start.. (needs better error handling) 
-    /*
-    open(localaddr, function (err) {
-    if (err) throw err;
-        console.log('Possible error opening browser');
-    });
-    */
+    if (argv['w'] != undefined) {
+        open(localaddr, function (err) {
+            if (err) throw err;
+            console.log('Possible error opening browser');
+        });
+    }
 
     if (!nconf.get("lastNonce")) {
         lastNonce = Math.floor((new Date).getTime() / 1000);
