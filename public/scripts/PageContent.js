@@ -83,6 +83,9 @@ function writeLogin() {
     }
 }
 
+function setImage() {
+}
+
 
 function passToSk(pass) {
     var ip = 'https://' + window.location.host;
@@ -124,10 +127,9 @@ function passToSk(pass) {
 
 var LoginForm = React.createClass({
   getInitialState: function() {
-        return { password: ''};
+        return { password: '', picture: 'mn620x300.png' };
   },
   login: function () {
-        //sessionStorage.clear();
         var sk = passToSk(this.state.password);
   },
   handleChangePass: function(event) {
@@ -154,7 +156,7 @@ var LoginForm = React.createClass({
     return (
      
         <div id="wrapper" style={wrapperStyle}>
-              <img style={logoStyle} src="images/mn620x300.png"></img>
+            <img style={logoStyle} src={"images/"+this.state.picture}></img>
             
               <form className="pure-form">
                

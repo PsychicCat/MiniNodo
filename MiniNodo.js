@@ -155,6 +155,10 @@ function serverCallback() {
     localaddr = 'https://localhost:' + port;
     //this might not work for purely remote users
     console.log("MiniNero web running on ", addrset);
+    console.log("If you are on an internal network, or something like Azure, then");
+    console.log("you will need to get your external ip from your Azure control panel");
+    console.log("(I will try to clean up external ip handling if I can figure out some");
+    console.log("easy way to do it in the future");
 
     //auto open on start.. (needs better error handling) 
     if (argv['w'] != undefined) {

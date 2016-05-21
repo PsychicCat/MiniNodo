@@ -14,7 +14,7 @@ Demo Video: https://www.youtube.com/embed/jR8o9uNb_jc
 
 3. In the top MiniNodo directory, use "npm install" to install all the dependency packages listed in package.json
 
-4. To start your server, you can use the command: "node MiniNodo.js 0.0.0.0"  Replace 0.0.0.0 with another ip if you wish to bind it differently.  
+4. To start your server, you can use the command: "node MiniNodo.js"  
 
 #Installation (Ubuntu 16 fresh install)
 0. Same as above. (Actually the app will work without this, but will be slightly less useful)
@@ -22,14 +22,19 @@ Demo Video: https://www.youtube.com/embed/jR8o9uNb_jc
 2. git clone https://www.github.com/ShenNoether/MiniNodo 
 3. cd MiniNodo
 4. npm install 
-5. nodejs MiniNodo.js 0.0.0.0
-6. open web browser to https://localhost:3000
-
-
+5. nodejs MiniNodo.js 
+6. open web browser to the printed address / port. Occasionally, if you are behind a vpn or internal network, you will need to use your external ip, which can be found through ifconfig / ipconfig
 
 
 #Notes
 1. My next aim is to improve user-friendliness of this code / repo. 
 2. Use at your own risk. 
+
+#Optional Command Line Flags:
+-h should print the help
+-p <password>
+-mp <port for mininero web>
+-swp <simplewallet port>
+-w    opens your browser to the app
 
 
