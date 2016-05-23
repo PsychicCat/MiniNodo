@@ -145,6 +145,17 @@ var LoginForm = React.createClass({
     
     console.log('setting localstorage theme as ', this.state.picturevalue);
     window.localStorage.setItem('theme', (this.state.picturevalue +1 )% 2);
+    //location.reload var theme =    window.localStorage.getItem('theme');
+    var menuHeader = document.getElementById("balancelink");
+    var theme = (this.state.picturevalue + 1 ) % 2;
+    
+    if (theme == 0) {
+        console.log('menu theme 0');
+        menuHeader.style.background = "#1f8dd6";
+    } else if (theme == 1) {
+        console.log('menu theme 1');
+        menuHeader.style.background = "#5b9a6f"
+    }
   },
   render: function () {
     var logoStyle = {
