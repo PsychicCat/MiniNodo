@@ -49,6 +49,8 @@
         var ip = 'https://' + window.location.host;
         sessionStorage.setItem('_ip', ip);
     </script>
+    
+   
 
     <!--login style -->
     <style>
@@ -102,6 +104,22 @@
                 </ul>
             </div>
         </div>
+        <!--script to change color of menu based on chosen theme -->
+    <script type="text/javascript">
+    var theme =    window.localStorage.getItem('theme');
+    var menuHeader = document.getElementById("balancelink");
+    
+    if (theme == 0) {
+        console.log('menu theme 0');
+        menuHeader.style.background = "#1f8dd6";
+    } else if (theme == 1) {
+        console.log('menu theme 1');
+        menuHeader.style.background = "#5b9a6f"
+    }
+    </script> 
+        
+        
+        
         <!--end purecss menu -->
         <!-- helper for the purecss sidebar -->
         <script src="scripts/ui.js"></script>

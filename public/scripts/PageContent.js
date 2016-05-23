@@ -83,8 +83,7 @@ function writeLogin() {
     }
 }
 
-function setImage() {
-}
+
 
 
 function passToSk(pass) {
@@ -127,13 +126,25 @@ function passToSk(pass) {
 
 var LoginForm = React.createClass({
   getInitialState: function() {
-        return { password: '', picture: 'mn620x300.png' };
+        var theme = window.localStorage.getItem('theme');
+        if (theme == null) {
+        console.log('could not retrieve theme');
+            theme = 0;
+        }
+        console.log('theme is',theme);
+        return { password: '', picture: ['mn620x300.png', 'LargeOrange.png'],colors:["#1f8dd6", "#5b9a6f"], picturevalue:theme };
   },
   login: function () {
         var sk = passToSk(this.state.password);
   },
   handleChangePass: function(event) {
         this.setState({ password: event.target.value});
+  },
+  handleThemeChange: function() {
+    this.setState({ picturevalue: (this.state.picturevalue+1) % 2});
+    
+    console.log('setting localstorage theme as ', this.state.picturevalue);
+    window.localStorage.setItem('theme', (this.state.picturevalue +1 )% 2);
   },
   render: function () {
     var logoStyle = {
@@ -147,7 +158,8 @@ var LoginForm = React.createClass({
     var buttonStyle = {
        display:'block',
       marginLeft:'auto',
-      marginRight:'auto'
+      marginRight:'auto',
+      background:this.state.colors[this.state.picturevalue]
     };
     var wrapperStyle = {
         background : 'black',
@@ -156,7 +168,7 @@ var LoginForm = React.createClass({
     return (
      
         <div id="wrapper" style={wrapperStyle}>
-            <img style={logoStyle} src={"images/"+this.state.picture}></img>
+            <img style={logoStyle} onClick={this.handleThemeChange} src={"images/"+this.state.picture[this.state.picturevalue]}></img>
             
               <form className="pure-form">
                

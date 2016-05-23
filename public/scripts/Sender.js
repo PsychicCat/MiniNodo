@@ -3,7 +3,12 @@
 var Sender = React.createClass({
 
     getInitialState: function () {
-        return { amount: '', destination: '', pid: '',uuid:'' };
+       var theme = window.localStorage.getItem('theme');
+        if (theme == null) {
+        console.log('could not retrieve theme');
+            theme = 0;
+        }
+        return { amount: '', destination: '', pid: '',uuid:'', colors:["#1f8dd6", "#5b9a6f"], themechoice:theme };
     },
 
     goToTxns: function () {
@@ -130,6 +135,9 @@ var Sender = React.createClass({
     },
 
     render: function () {
+      var buttonStyle = {
+      background:this.state.colors[this.state.themechoice]
+    };
 
         return (
             <div className="content">
@@ -145,8 +153,8 @@ var Sender = React.createClass({
                         <input type="text" className="pure-input-1" placeholder="Save Name"/>
                         <textarea className="pure-input-1" placeholder="Transaction Memo">{this.state.uuid}</textarea>
                     </fieldset>
-                    <button onClick={this.saveAddress} className="pure-button pure-input-1 pure-button-primary">Save Address</button>
-                    <button onClick={this.send} className="pure-button pure-input-1 pure-button-primary">Send</button>
+                    <button  style={buttonStyle} onClick={this.saveAddress} className="pure-button pure-input-1 pure-button-primary">Save Address</button>
+                    <button  style={buttonStyle} onClick={this.send} className="pure-button pure-input-1 pure-button-primary">Send</button>
                 </form>
             </div>
         );
