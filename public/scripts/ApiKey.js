@@ -39,7 +39,7 @@ function genApiKey() {
 
 function saveApiKey() {
   if (confirm('Save generated Api Key?')) {
-    // Save it!
+    //refactor this rest api stuff when you get a chance
     var ip = 'https://' + window.location.host;
     var route = '/api/mininero';
     var theUrl = ip + route;

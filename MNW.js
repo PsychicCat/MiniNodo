@@ -99,6 +99,7 @@ MNW.prototype.decrypt = function (c, nonce, tk) {
 
 MNW.prototype.parseQuery = function(body, qstr) {
     //var query = {};
+    console.log('qerystring'+qstr);
     var a = qstr.split('&');
     for (var i = 0; i < a.length; i++) {
         var b = a[i].split('=');
@@ -128,10 +129,7 @@ MNW.prototype.dataEncrypted = function (message, passthrough) {
     if (passthrough == false) {
         return message;
     } else {
-        var nonce = this.now();
-        while (nonce.length < 48) {
-            nonce = "0" + nonce;
-        }
+        var nonce = this.getSS(MiniNeroPk, message).substring(0, 48);
         var keypair = nacl.sign.keyPair.fromSeed(this.FromHex(MiniNeroPk));
         var encrypted = nacl.secretbox(naclutil.decodeUTF8(message), this.FromHex(nonce), this.FromHex(MiniNeroPk));
         var jsonReturn = { "cipher": this.ToHex(encrypted), "nonce": nonce };

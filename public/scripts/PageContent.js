@@ -165,6 +165,10 @@ var LoginForm = React.createClass({
       marginRight:'auto'
     };
     var inputStyle = {
+        maxWidth:500,
+        display:'block',
+      marginLeft:'auto',
+      marginRight:'auto',       
     };
     var buttonStyle = {
        display:'block',

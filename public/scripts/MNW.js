@@ -135,13 +135,7 @@ MNW.prototype.dataEncrypted = function (message, passthrough) {
     if (passthrough == false) {
         return message;
     } else {
-        var nonce = this.now();
-        if (nonce == null) {
-            console.log('error getting time!');
-        }
-        while (nonce.length < 48) {
-            nonce = "0" + nonce;
-        }
+        var nonce = this.getSS(MiniNeroPk, message).substring(0, 48);
         var keypair = nacl.sign.keyPair.fromSeed(this.FromHex(MiniNeroPk));
         var encrypted = nacl.secretbox(nacl.util.decodeUTF8(message), this.FromHex(nonce), this.FromHex(MiniNeroPk));
         var jsonReturn = { "cipher": this.ToHex(encrypted), "nonce": nonce };
