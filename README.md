@@ -25,6 +25,11 @@ Demo Video: https://www.youtube.com/embed/jR8o9uNb_jc
 5. nodejs MiniNodo.js 
 6. open web browser to the printed address / port. Occasionally, if you are behind a vpn or internal network, you will need to use your external ip, which can be found through ifconfig / ipconfig
 
+#Installation on OSX
+1. git clone  https://www.github.com/ShenNoether/MiniNodo 
+2. npm install
+3. node MiniNodo.js 
+
 
 #Notes
 1. My next aim is to improve user-friendliness of this code / repo. 
