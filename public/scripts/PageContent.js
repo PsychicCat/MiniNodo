@@ -70,7 +70,9 @@ function writeHome() {
 
 function writeLogin() {
     var sid = isLoggedIn();
+    console.log('a');
     if (!sid) {
+        console.log('b');
         document.body.style.background = "black";
         document.getElementById("qrcode").innerHTML = '';
         document.getElementById("innercontent").innerHTML='';
@@ -79,6 +81,7 @@ function writeLogin() {
             document.getElementById("innercontent")
         );
     } else {
+        console.log('c');
         writeHome();
     }
 }
@@ -100,11 +103,9 @@ function passToSk(pass) {
                 var salt1 = data.split(',')[0];
                 var cb_time = parseInt(data.split(',')[1], 10);
                 var lastNonce = data.split(',')[2];
-                console.log('lastNonce', lastNonce);
                 sessionStorage.setItem('lastNonce', lastNonce);
                 var now = mnw.Now();
                 var offset = Math.max(cb_time - now, 30);
-                console.log('cbtime, now, offset',cb_time, now, offset);
                 sessionStorage.setItem('offset', String(offset));
                 var salt2 = mnw.genSalt();
                 var issuetime = String(cb_time);
@@ -134,7 +135,8 @@ var LoginForm = React.createClass({
         console.log('theme is',theme);
         return { password: '', picture: ['mn620x300.png', 'LargeOrange.png'],colors:["#1f8dd6", "#5b9a6f"], picturevalue:theme };
   },
-  login: function () {
+  login: function (e) {
+        e.preventDefault();
         var sk = passToSk(this.state.password);
   },
   handleChangePass: function(event) {

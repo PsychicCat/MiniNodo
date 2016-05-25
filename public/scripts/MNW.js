@@ -77,10 +77,19 @@ MNW.prototype.getSS = function(password, salt1) {
   return this.ToHex(nacl.hash(this.FromString(password + salt1))).substring(0, 64);
 }
 
+//for some reason slice doesn't work in safari?
+MNW.prototype.slice2 = function(arr, num) {
+    var rv = new Uint8Array(num);
+    for (var i = 0 ; i < num ; i++) {
+        rv[i] = arr[i];
+    }
+    return rv;
+}
+
 //takes as input 'salt1' which is a 32 byte string
 MNW.prototype.genTokenClient = function(password, salt1, salt2, time) {
   var ss = this.getSS(password, salt1);
-  var token = nacl.hash(this.FromString(ss + time + salt2)).slice(0, 32);
+  var token = this.slice2(nacl.hash(this.FromString(ss + time + salt2)), 32);
   var skpk = nacl.sign.keyPair.fromSeed(token);
   return this.ToHex(skpk.secretKey);
 }

@@ -32,7 +32,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
 
     <!--NACL library -->
-    <script type="text/javascript" src="scripts/nacl-fast.min.js"></script>
+    <script type="text/javascript" src="scripts/nacl-fast.js"></script>
     <script type="text/javascript" src="scripts/naclutil.js"></script>
     <!-- NACL helpers for MiniNero Web -->
     <script type="text/javascript" src="scripts/MNW.js"></script>
@@ -209,17 +209,21 @@
             var sk = sessionStorage.getItem('_sk');
             //check if anything is stored.
             if (sk == null) {
+                console.log('d');
                 return false;
             }
             var epoch = parseInt(sessionStorage.getItem('_epoch'));
             if (epoch == null) {
+                console.log('e');
                 return false;
             }
             var nowtime = now();
             //10 minute time out
             if (epoch - nowtime > (60 * 10)) {
+                console.log('f');
                 return false;
             }
+            console.log('g');
             return true;
         }
     </script>
