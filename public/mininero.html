@@ -109,7 +109,11 @@
     var theme =    window.localStorage.getItem('theme');
     var menuHeader = document.getElementById("balancelink");
     
-    if (theme == 0) {
+    if (theme == null) {
+        console.log('menu theme 1');
+        menuHeader.style.background = "#5b9a6f"
+        window.localStorage.setItem('theme', 1);
+    } else if (theme == 0) {
         console.log('menu theme 0');
         menuHeader.style.background = "#1f8dd6";
     } else if (theme == 1) {

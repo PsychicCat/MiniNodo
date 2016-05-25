@@ -130,7 +130,7 @@ var LoginForm = React.createClass({
         var theme = window.localStorage.getItem('theme');
         if (theme == null) {
         console.log('could not retrieve theme');
-            theme = 0;
+            theme = 1;
         }
         console.log('theme is',theme);
         return { password: '', picture: ['mn620x300.png', 'LargeOrange.png'],colors:["#1f8dd6", "#5b9a6f"], picturevalue:theme };
@@ -167,18 +167,18 @@ var LoginForm = React.createClass({
       marginRight:'auto'
     };
     var inputStyle = {
-        maxWidth:500,
-        display:'block',
+      display:'block',
       marginLeft:'auto',
       marginRight:'auto',       
     };
     var buttonStyle = {
-       display:'block',
+      display:'block',
       marginLeft:'auto',
       marginRight:'auto',
       background:this.state.colors[this.state.picturevalue]
     };
     var wrapperStyle = {
+        padding :'15px',
         background : 'black',
         font : 'white'
     }
