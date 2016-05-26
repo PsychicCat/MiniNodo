@@ -134,8 +134,12 @@ MNW.prototype.createResponse = function(bodyObject) {
 }
 
 MNW.prototype.dataDecrypted = function (body) {
-    var a = nacl.secretbox.open(this.FromHex(body.cipher), this.FromHex(body.nonce), this.FromHex(MiniNeroPk));
-    return this.parseQuery(body, nacl.util.encodeUTF8(a));
+    if (body.cipher != null) {
+        var a = nacl.secretbox.open(this.FromHex(body.cipher), this.FromHex(body.nonce), this.FromHex(MiniNeroPk));
+        return this.parseQuery(body, nacl.util.encodeUTF8(a));
+    } else {
+        return body;
+    }
 }
 
 

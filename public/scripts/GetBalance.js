@@ -9,18 +9,19 @@ function writeBalance() {
   var token = sessionStorage.getItem('_sk');
   var issuetime = sessionStorage.getItem('issuetime');
   var offset = parseInt(sessionStorage.getItem('offset'), 10);
-    var lastNonce = parseInt(sessionStorage.getItem('lastNonce'), 10);
+  var lastNonce = parseInt(sessionStorage.getItem('lastNonce'), 10);
   var timenow  = String(Math.max(mnw.Now()+offset, lastNonce+1));
   sessionStorage.setItem('lastNonce', timenow);
   var timenow  = String(Math.max(mnw.Now()+offset, lastNonce+1));
   var salt2 = sessionStorage.getItem('salt2');
   var signature = mnw.Sign('balance' + timenow, token);
+  var thedata ={ "Type": "balance", "timestamp": timenow, "salt2": salt2, "issuetime": issuetime, "signature": signature };
   if (token != null & token != '') {
     spinner.spin(spint);
     $.ajax({
       type: "POST",
       url: theUrl,
-      data: { "Type": "balance", "timestamp": timenow, "salt2": salt2, "issuetime": issuetime, "signature": signature },
+      data: thedata,
       success: function (data) {
         spinner.stop();
         data = String(data);
