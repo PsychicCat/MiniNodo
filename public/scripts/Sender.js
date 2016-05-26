@@ -104,11 +104,13 @@ var Sender = React.createClass({
                     console.log('success');
                     writeBalance();
                     this.goToTxns();
+		    return false;
                 }.bind(this),
                 error: function (xhr, status, err) {
                     spinner.stop();
                     console.log('fail');
                     this.goToTxns();
+                    return false;
                 }.bind(this),
                    timeout : 5000
             });
