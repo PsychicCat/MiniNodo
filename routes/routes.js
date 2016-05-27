@@ -174,8 +174,11 @@ var appRouter = function (app) {
 
         var useEncryption = false;
         if (req.body.cipher) {
+            console.log("encryption used, decrypting");
             req.body = mnw.dataDecrypted(req.body);
             useEncryption = true;
+        } else {
+            console.log("no encryption besides possibly https used");
         }
 
         if (!Verifier(req.body)) {

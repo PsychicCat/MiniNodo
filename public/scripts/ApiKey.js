@@ -31,7 +31,7 @@ function genApiKey() {
     var q = document.getElementById("qrcode");
     q.innerHTML = '';
     ic = document.getElementById("innercontent");
-    var skqr = "apikey:" + sk + "?" + ip;
+    var skqr = "apikey:" + sk + "?ip:" + ip;
     ic.innerHTML = '<div class="content"><p style="word-break:break-all">' + sk + ' <button id="saveqrbutton" class="button-xsmall pure-button" onclick="saveApiKey()">Save</button></p></div>';
     new QRCode(q, skqr);
   }
