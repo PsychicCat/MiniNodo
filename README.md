@@ -8,7 +8,7 @@ Demo Video: https://www.youtube.com/embed/jR8o9uNb_jc
 #Installation (Ubuntu 14 / Windows msys2)
 0. A pre-requisite is that your monero installation should be running in rpc mode: ./simplewallet --wallet-file ~/wallet.bin --password <wallet_password> --rpc-bind-port 18082)   (it is helpful to use the program "screen" at this point: https://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/). You can likely add daemon mode too, if you don't want to actually download the blockchain.
 
-1. You should first make sure that you have a recent (5.8 should work) node.js installation on the PC running Monero. For example if that is a Windows pc you can go here: https://nodejs.org/en/ and on Linux, you can use the instructions here: https://nodejs.org/en/download/package-manager/
+1. You should first make sure that you have a recent (5.8 should work) node.js installation on the PC running Monero. For example if that is a Windows pc you can go here: https://nodejs.org/en/ and on Linux, you can use the instructions here: https://nodejs.org/en/download/package-manager/  IMPORTANT: on Ubuntu 14, it is easy to get the wrong version of nodejs, you can alternatively manage your node version using nvm: https://github.com/creationix/nvm and a tutorial for using nvm is here: http://www.hostingadvice.com/how-to/install-nodejs-ubuntu-14-04/ 
 
 2. Next clone the repository, or download it as a zip file and extract it to a folder. 
 
