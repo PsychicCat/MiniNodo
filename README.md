@@ -1,4 +1,7 @@
 # MiniNodo / MiniNero Web
+
+For suggestions / to help with development, join the new team board at: https://trello.com/minineroappsdevelopment
+
 This node.js server runs on the same machine as your monero installation and provides encrypted and authenticated communication via NACL between the MiniNeroUniversal Windows 10 phone / tablet / PC apps, your Monero installation, and xmr.to. 
 
 Additionally, I've included MiniNero Web which allows for management of MiniNodo, and is a simple standalone wallet gui (This can accomplish basic gui tasks such as send, receive, and view transactions, but is not intended to replace an official GUI). 
